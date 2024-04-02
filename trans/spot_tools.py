@@ -7,6 +7,7 @@ Created on 2 Apr 2024
 def parse_st_h5():
     '''
     '''
+    pass
     
 def parse_st_coords():
     '''
