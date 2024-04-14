@@ -7,6 +7,8 @@ import platform
 
 import torch
 
+from support.parames import parames_basic
+
 
 def _todevice(torch_item):
     devices = torch.device('cuda')
@@ -27,6 +29,11 @@ def _todevice(torch_item):
             torch_item.to(devices_cpu)
     else:
         torch_item.to(devices)
+        
+ENV = parames_basic(
+        project_name='PanoPath-V01',
+        pil_image_file_format='.png',
+    )
 
 if __name__ == '__main__':
     pass
