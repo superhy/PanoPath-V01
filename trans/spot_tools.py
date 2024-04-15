@@ -110,6 +110,8 @@ def parse_st_h5_f0_topvar0(ENV_task, trans_filename, top_n=1000):
     barcodes = count_matrix.barcodes # spot barcode
     # gene_names = count_matrix.feature_ref['name'] # gene names
     all_gene_names = count_matrix.all_gene_names
+    if top_n is None:
+        top_n = int(len(all_gene_names) / 4.0)
     
     # Convert the sparse matrix to dense format for easier processing
     dense_matrix = matrix.toarray().T

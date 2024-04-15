@@ -10,9 +10,11 @@ from tqdm import tqdm
 from contextlib import redirect_stdout
 
 import pandas as pd
+import seaborn as sns
 import matplotlib.pyplot as plt
 from support import env_st_pre
 from trans import spot_tools
+import gc
 
 
 def find_file_with_prefix(prefix, folder_path):
@@ -216,6 +218,39 @@ def _h_plot_h5_files_statistics(ENV_task):
     plt.savefig(save_path_2)
     print(f'save plot: {save_path_2}')
     # plt.show()
+    
+def _h_analyze_ext_genes_for_all_barcodes(ENV_task):
+    """
+    Analyze and plot the distribution of gene_values lengths for all .h5 files in the specified folder.
+    """
+    folder_path = ENV_task.ST_HE_TRANS_FOLDER
+    lengths = []  # List to store the lengths of gene_values for each barcode
+    filenames = [f for f in os.listdir(folder_path) if f.endswith('.h5')]
+    
+    print("Processing .h5 files...")
+    for filename in filenames:
+        filepath = os.path.join(folder_path, filename)
+        # cohort_name = filename.replace('_filtered_feature_bc_matrix.h5', '')
+        
+        # Process each file to get the barcode_gene_dict
+        barcode_gene_dict, barcodes, _ = spot_tools.parse_st_h5_f0_topvar0(ENV_task, filepath)
+        # Collect lengths of gene_values for each barcode and clean up memory
+        for barcode in barcodes:
+            gene_values = barcode_gene_dict[barcode]
+            lengths.append(len(gene_values))
+            
+        # Optionally, to minimize memory use, clear the barcode_gene_dict
+        del barcode_gene_dict
+        gc.collect()
+
+    # Plotting the distribution of gene_values lengths
+    plt.figure(figsize=(10, 6))
+    sns.displot(lengths, kde=True)
+    plt.title('Distribution of Extracted Genes Number Across All Cohorts')
+    plt.xlabel('Number of Extracted Genes')
+    plt.ylabel('Frequency')
+    plt.tight_layout()
+    plt.show()
 
 if __name__ == '__main__':
     '''
@@ -228,7 +263,8 @@ if __name__ == '__main__':
     # print(c_file_names)
     
     # _h_batch_qualitify_info_in_h5_files(env_st_pre.ENV_ST_HE_PRE)
-    _h_plot_h5_files_statistics(env_st_pre.ENV_ST_HE_PRE)
+    # _h_plot_h5_files_statistics(env_st_pre.ENV_ST_HE_PRE)
+    _h_analyze_ext_genes_for_all_barcodes(env_st_pre.ENV_ST_HE_PRE)
     
     
     
