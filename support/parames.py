@@ -62,6 +62,7 @@ class parame_st_task(parames_basic):
         super(parame_st_task, self).__init__(project_name, 
                                              pil_image_file_format)
         
+        self.ST_HE_LOG_DIR = os.path.join(self.PROJECT_DIR, 'data/st-he/logs')
         self.ST_HE_META_DIR = os.path.join(self.PROJECT_DIR, 'data/st-he/meta')
         self.ST_HE_DIR = os.path.join(self.DATA_DIR, 'st-he')
         self.ST_IHC_DIR = os.path.join(self.DATA_DIR, 'st-ihc')

@@ -1,0 +1,81 @@
+Barcodes count per cohort:
+CytAssist_11mm_FFPE_Human_Colorectal_Cancer: 9080 barcodes
+CytAssist_11mm_FFPE_Human_Glioblastoma: 10878 barcodes
+CytAssist_11mm_FFPE_Human_Kidney: 5936 barcodes
+CytAssist_11mm_FFPE_Human_Lung_Cancer: 6195 barcodes
+CytAssist_11mm_FFPE_Human_Ovarian_Carcinoma: 4674 barcodes
+CytAssist_FFPE_Human_Lung_Squamous_Cell_Carcinoma: 3858 barcodes
+CytAssist_Fresh_Frozen_Human_Breast_Cancer: 1657 barcodes
+DLPFC_151507: 4226 barcodes
+DLPFC_151508: 4384 barcodes
+DLPFC_151509: 4789 barcodes
+DLPFC_151510: 4634 barcodes
+DLPFC_151669: 3661 barcodes
+DLPFC_151670: 3498 barcodes
+DLPFC_151671: 4110 barcodes
+DLPFC_151672: 4015 barcodes
+DLPFC_151673: 3639 barcodes
+DLPFC_151674: 3673 barcodes
+DLPFC_151675: 3592 barcodes
+DLPFC_151676: 3460 barcodes
+Parent_Visium_Human_BreastCancer: 4325 barcodes
+Parent_Visium_Human_ColorectalCancer: 3138 barcodes
+Parent_Visium_Human_Glioblastoma: 3468 barcodes
+Targeted_Visium_Human_BreastCancer_Immunology: 4325 barcodes
+Targeted_Visium_Human_ColorectalCancer_GeneSignature: 3138 barcodes
+Targeted_Visium_Human_Glioblastoma_Pan_Cancer: 3468 barcodes
+V1_Breast_Cancer_Block_A_Section_1: 3813 barcodes
+V1_Breast_Cancer_Block_A_Section_2: 3987 barcodes
+V1_Human_Lymph_Node: 4035 barcodes
+Visium_FFPE_Human_Cervical_Cancer: 2781 barcodes
+Visium_FFPE_Human_Intestinal_Cancer: 2660 barcodes
+Visium_FFPE_Human_Ovarian_Cancer: 3455 barcodes
+Visium_FFPE_Human_Prostate_Acinar_Cell_Carcinoma: 3043 barcodes
+Visium_Human_Breast_Cancer: 4898 barcodes
+Unique barcodes number: 21179
+Real barcode number: 140493
+There are overlapping barcodes across cohorts.
+
+Gene names count per cohort:
+CytAssist_11mm_FFPE_Human_Colorectal_Cancer: 18082 gene names
+CytAssist_11mm_FFPE_Human_Glioblastoma: 18082 gene names
+CytAssist_11mm_FFPE_Human_Kidney: 18082 gene names
+CytAssist_11mm_FFPE_Human_Lung_Cancer: 18082 gene names
+CytAssist_11mm_FFPE_Human_Ovarian_Carcinoma: 18082 gene names
+CytAssist_FFPE_Human_Lung_Squamous_Cell_Carcinoma: 18082 gene names
+CytAssist_Fresh_Frozen_Human_Breast_Cancer: 18082 gene names
+DLPFC_151507: 33514 gene names
+DLPFC_151508: 33514 gene names
+DLPFC_151509: 33514 gene names
+DLPFC_151510: 33514 gene names
+DLPFC_151669: 33514 gene names
+DLPFC_151670: 33514 gene names
+DLPFC_151671: 33514 gene names
+DLPFC_151672: 33514 gene names
+DLPFC_151673: 33514 gene names
+DLPFC_151674: 33514 gene names
+DLPFC_151675: 33514 gene names
+DLPFC_151676: 33514 gene names
+Parent_Visium_Human_BreastCancer: 36591 gene names
+Parent_Visium_Human_ColorectalCancer: 36591 gene names
+Parent_Visium_Human_Glioblastoma: 36591 gene names
+Targeted_Visium_Human_BreastCancer_Immunology: 1056 gene names
+Targeted_Visium_Human_ColorectalCancer_GeneSignature: 1142 gene names
+Targeted_Visium_Human_Glioblastoma_Pan_Cancer: 1253 gene names
+V1_Breast_Cancer_Block_A_Section_1: 33514 gene names
+V1_Breast_Cancer_Block_A_Section_2: 36591 gene names
+V1_Human_Lymph_Node: 36591 gene names
+Visium_FFPE_Human_Cervical_Cancer: 17941 gene names
+Visium_FFPE_Human_Intestinal_Cancer: 17941 gene names
+Visium_FFPE_Human_Ovarian_Cancer: 17941 gene names
+Visium_FFPE_Human_Prostate_Acinar_Cell_Carcinoma: 17941 gene names
+Visium_Human_Breast_Cancer: 36591 gene names
+
+Cohorts with identical gene names:
+> [CytAssist_11mm_FFPE_Human_Colorectal_Cancer, CytAssist_11mm_FFPE_Human_Glioblastoma, CytAssist_11mm_FFPE_Human_Kidney, CytAssist_11mm_FFPE_Human_Lung_Cancer, CytAssist_11mm_FFPE_Human_Ovarian_Carcinoma, CytAssist_FFPE_Human_Lung_Squamous_Cell_Carcinoma, CytAssist_Fresh_Frozen_Human_Breast_Cancer] have the same set of gene names.
+> [DLPFC_151507, DLPFC_151508, DLPFC_151509, DLPFC_151510, DLPFC_151669, DLPFC_151670, DLPFC_151671, DLPFC_151672, DLPFC_151673, DLPFC_151674, DLPFC_151675, DLPFC_151676, V1_Breast_Cancer_Block_A_Section_1] have the same set of gene names.
+> [Parent_Visium_Human_BreastCancer, Parent_Visium_Human_ColorectalCancer, Parent_Visium_Human_Glioblastoma, V1_Breast_Cancer_Block_A_Section_2, V1_Human_Lymph_Node, Visium_Human_Breast_Cancer] have the same set of gene names.
+> ['Targeted_Visium_Human_BreastCancer_Immunology'] has 1056 gene names.
+> ['Targeted_Visium_Human_ColorectalCancer_GeneSignature'] has 1142 gene names.
+> ['Targeted_Visium_Human_Glioblastoma_Pan_Cancer'] has 1253 gene names.
+> [Visium_FFPE_Human_Cervical_Cancer, Visium_FFPE_Human_Intestinal_Cancer, Visium_FFPE_Human_Ovarian_Cancer, Visium_FFPE_Human_Prostate_Acinar_Cell_Carcinoma] have the same set of gene names.

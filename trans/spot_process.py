@@ -3,11 +3,16 @@ Created on 13 Apr 2024
 
 @author: yang hu
 '''
+import collections
 import os
 
+from tqdm import tqdm
+from contextlib import redirect_stdout
+
 import pandas as pd
-from torchvision.datasets import folder
+import matplotlib.pyplot as plt
 from support import env_st_pre
+from trans import spot_tools
 
 
 def find_file_with_prefix(prefix, folder_path):
@@ -94,18 +99,136 @@ def query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_name):
     }
     
     return file_names
+
+def _h_batch_qualitify_info_in_h5_files(ENV_task):
+    """
+    Process all .h5 files in the given folder to collect dataset statistics.
     
+    PS: the prefix '_h_' means recommend call at here
     
+    Args:
+        ENV_task: to get the folder_path (str), be like Path to the folder containing .h5 files.
+    """
+    folder_path = ENV_task.ST_HE_TRANS_FOLDER
+    # load all filenames
+    filenames = [f for f in os.listdir(folder_path) if f.endswith('.h5')]
+    barcode_sets = {}
+    gene_name_sets = {}
+    
+    log_file_path = os.path.join(ENV_task.ST_HE_LOG_DIR, 'log-_h_batch_qualitify_info_in_h5_files.log')
+    with open(log_file_path, 'w') as log_file:
+        with redirect_stdout(log_file):
+            # enumerate the file names
+            for filename in tqdm(filenames, desc="Processing .h5 files"):
+                filepath = os.path.join(folder_path, filename)
+                cohort_name = filename.replace('_filtered_feature_bc_matrix.h5', '')
+                
+                # call get_matrix_from_h5 for single file
+                count_matrix = spot_tools.get_matrix_from_h5(filepath)
+                barcodes = count_matrix.barcodes
+                all_gene_names = count_matrix.all_gene_names
+                # statistic of barcodes in different will have repeat
+                barcode_sets[cohort_name] = set(barcodes)
+                # count gene names
+                gene_name_sets[cohort_name] = set(all_gene_names)
+            
+            # check barcodes number for each cohort
+            print("Barcodes count per cohort:")
+            for cohort, bcs in barcode_sets.items():
+                print(f"{cohort}: {len(bcs)} barcodes")
+            
+            # check if barcode is unique
+            all_barcodes = set()
+            for bcs in barcode_sets.values():
+                all_barcodes.update(bcs)
+            if len(all_barcodes) == sum(len(bcs) for bcs in barcode_sets.values()):
+                print("All barcodes across cohorts are unique.")
+            else:
+                print(f'Unique barcodes number: {len(all_barcodes)}')
+                print(f'Real barcode number: {sum(len(bcs) for bcs in barcode_sets.values()) }')
+                print("There are overlapping barcodes across cohorts.")
+            
+            # check the repeat of gene names in different cohorts
+            print("\nGene names count per cohort:")
+            gene_name_matches = collections.defaultdict(list)
+            for cohort, genes in gene_name_sets.items():
+                print(f"{cohort}: {len(genes)} gene names")
+                gene_name_matches[frozenset(genes)].append(cohort)
+            
+            # print the cohorts name with same list of gene names
+            print("\nCohorts with identical gene names:")
+            for genes, cohorts in gene_name_matches.items():
+                if len(cohorts) > 1:
+                    print(f"> [{', '.join(cohorts)}] have the same set of gene names.")
+                else:
+                    print(f"> {cohorts} has {len(genes)} gene names.")
+    
+    print(f'>>> Please find log output in: {log_file_path}.')
+    
+def _h_plot_h5_files_statistics(ENV_task):
+    """
+    Process all .h5 files in the given folder to collect dataset statistics
+    and plot barcodes and gene names counts per cohort.
+    
+    PS: the prefix '_h_' means recommend call at here
+    """
+    folder_path = ENV_task.ST_HE_TRANS_FOLDER
+    filenames = [f for f in os.listdir(folder_path) if f.endswith('.h5')]
+    barcode_counts = {}
+    gene_name_counts = {}
+    
+    # Process each .h5 file
+    for filename in tqdm(filenames, desc="Processing .h5 files"):
+        filepath = os.path.join(folder_path, filename)
+        cohort_name = filename.replace('_filtered_feature_bc_matrix.h5', '')
+        
+        # Load data using the previously defined function
+        count_matrix = spot_tools.get_matrix_from_h5(filepath)
+        barcodes = count_matrix.barcodes
+        all_gene_names = count_matrix.all_gene_names
+        
+        # Collect statistics for barcodes and gene names
+        barcode_counts[cohort_name] = len(set(barcodes))
+        gene_name_counts[cohort_name] = len(set(all_gene_names))
+
+    # Plotting the number of barcodes per cohort
+    plt.figure(figsize=(12, 7))
+    plt.bar(barcode_counts.keys(), barcode_counts.values(), color='skyblue')
+    plt.xlabel('Cohort')
+    plt.ylabel('Number of Barcodes')
+    plt.title('Number of Barcodes per Cohort')
+    plt.xticks(rotation=90, fontsize=10)
+    plt.tight_layout()
+    save_path_1 = os.path.join(ENV_task.ST_HE_LOG_DIR, 'Cohort-nb_barcode-dist.png')
+    plt.savefig(save_path_1)
+    print(f'save plot: {save_path_1}')
+    # plt.show()
+
+    # Plotting the number of gene names per cohort
+    plt.figure(figsize=(12, 7))
+    plt.bar(gene_name_counts.keys(), gene_name_counts.values(), color='salmon')
+    plt.xlabel('Cohort')
+    plt.ylabel('Number of Gene Names')
+    plt.title('Number of Gene Names per Cohort')
+    plt.xticks(rotation=90, fontsize=10)
+    plt.tight_layout()
+    save_path_2 = os.path.join(ENV_task.ST_HE_LOG_DIR, 'Cohort-nb_gene-dist.png')
+    plt.savefig(save_path_2)
+    print(f'save plot: {save_path_2}')
+    # plt.show()
 
 if __name__ == '__main__':
     '''
     some unit tests here
     '''
     # _prod_st_cohort_names_from_folder(env_st_pre.ENV_ST_HE_PRE)
-    c_file_names = query_file_names_for_cohort(env_st_pre.ENV_ST_HE_PRE,
-                                               'cohort_file_mapping.csv',
-                                               'CytAssist_11mm_FFPE_Human_Kidney')
-    print(c_file_names)
+    # c_file_names = query_file_names_for_cohort(env_st_pre.ENV_ST_HE_PRE,
+    #                                            'cohort_file_mapping.csv',
+    #                                            'CytAssist_11mm_FFPE_Human_Kidney')
+    # print(c_file_names)
+    
+    # _h_batch_qualitify_info_in_h5_files(env_st_pre.ENV_ST_HE_PRE)
+    _h_plot_h5_files_statistics(env_st_pre.ENV_ST_HE_PRE)
     
     
     
