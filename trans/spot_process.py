@@ -246,11 +246,11 @@ def _h_analyze_ext_genes_for_all_barcodes(ENV_task):
     # Plotting the distribution of gene_values lengths
     plt.figure(figsize=(10, 6))
     # sns.displot(lengths, kde=True)
-    sns.histplot(lengths, kde=True, color='blue', binwidth=1)
+    sns.histplot(lengths, kde=True, color='blue')
     plt.title('Distribution of Extracted Genes Number Across All Cohorts')
     plt.xlabel('Number of Extracted Genes')
     plt.ylabel('Frequency')
-    plt.ylim(0, 4000)
+    plt.ylim(0, 200)
     plt.tight_layout()
     plt.show()
 
