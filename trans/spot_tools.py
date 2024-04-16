@@ -123,14 +123,16 @@ def parse_st_h5_f0_topvar0(ENV_task, trans_filename, top_n=1000):
     variances = np.array(matrix.power(2).mean(axis=1) - np.square(matrix.mean(axis=1))).flatten()
     top_genes_indices = np.argsort(variances)[-top_n:]
     # filtered_matrix = matrix[top_genes_indices, :]
-    top_var_gene_names = all_gene_names[top_genes_indices]  # Top variable gene names
+    # top_var_gene_names = all_gene_names[top_genes_indices]  # Top variable gene names
     
     # Creating a dictionary with barcodes as keys and list of (gene_name, value) tuples as values
     barcode_gene_dict = {}
     for i, barcode in tqdm(enumerate(barcodes), total=len(barcodes), desc="Processing gene matrix"):
-        gene_values = [(gene, dense_matrix[i, j]) for j, gene in enumerate(all_gene_names) if dense_matrix[i, j] != 0]
+        # gene_values = [(gene, dense_matrix[i, j]) for j, gene in enumerate(all_gene_names) if dense_matrix[i, j] != 0]
+        gene_values = [(j, dense_matrix[i, j]) for j, _ in enumerate(all_gene_names) if dense_matrix[i, j] != 0]
         # nb_f0 = len(gene_values)
-        gene_values += [(top_var_gene_names[idx], 0) for idx in range(len(top_var_gene_names)) if dense_matrix[i, top_genes_indices[idx]] == 0]
+        # gene_values += [(top_var_gene_names[idx], 0) for idx in range(len(top_var_gene_names)) if dense_matrix[i, top_genes_indices[idx]] == 0]
+        gene_values += [(idx, 0) for idx in top_genes_indices if dense_matrix[i, idx] == 0]
         barcode_gene_dict[barcode] = gene_values
         
         # print(f"Barcode: {barcode}, Original Non-Zero Genes: {nb_f0},\
