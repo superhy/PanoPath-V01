@@ -6,13 +6,38 @@ Created on 16 Apr 2024
 
 from support import env_st_pre
 from trans import spot_tools
+from trans.spot_process import _h_analyze_ext_genes_for_all_barcodes
 
 
-def test_1():
+def test_spot_tools_1():
+    '''
+    test parse_st_h5_f0_topvar0
+    '''
     ENV_task = env_st_pre.ENV_ST_HE_PRE
     trans_filename = 'DLPFC_151507_filtered_feature_bc_matrix.h5'
     bc_gene_dict, bcs, genes = spot_tools.parse_st_h5_f0_topvar0(ENV_task, trans_filename)
-    print(list(bc_gene_dict.values())[0])
     
+    # print(bc_gene_dict[bcs[0]])
+    # print(bc_gene_dict[bcs[1]])
+    # print(bc_gene_dict[bcs[2]])
+    
+    for i in range(3):
+        gene_idxs = [idx for idx, _ in bc_gene_dict[bcs[i]] ]
+        gene_exp = [v for _, v in bc_gene_dict[bcs[i]] ]
+        print(genes[gene_idxs])
+        print(gene_exp)
+        
+def test_spot_process_1():
+    '''
+    test _h_analyze_ext_genes_for_all_barcodes
+    '''
+    ENV_task = env_st_pre.ENV_ST_HE_PRE
+    _h_analyze_ext_genes_for_all_barcodes(ENV_task)
+            
 if __name__ == '__main__':
-    test_1()
+    
+    # test_spot_tools_1()
+    test_spot_process_1()
+    
+    
+    

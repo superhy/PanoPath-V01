@@ -13,6 +13,7 @@ import numpy as np
 import pandas as pd
 import scipy.sparse as sp_sparse
 from support import env_st_pre
+import gc
 
 
 def get_matrix_from_h5(h5_filepath):
@@ -56,13 +57,14 @@ def parse_st_h5_f0(ENV_task, trans_filename):
     dense_matrix = matrix.toarray().T
     print(f'with filtered matrix shape as (nb_spots, nb_genes): {dense_matrix.shape}')
     print(f'barcodes: \n{barcodes}')
-    print(f'gene_names: \n{gene_names}')
+    print(f'gene_names number: \n{len(gene_names)}')
     
     # Creating a dictionary with barcodes as keys and list of (gene_name, value) tuples as values
     barcode_gene_dict = {}
     for i, barcode in enumerate(barcodes):
-        gene_values = [(gene, dense_matrix[i, j]) for j, gene in enumerate(gene_names) if dense_matrix[i, j] != 0]
-        barcode_gene_dict[barcode] = gene_values
+        gene_idxs = [(j, dense_matrix[i, j]) for j, _ in enumerate(gene_names) if dense_matrix[i, j] != 0]
+        barcode_gene_dict[barcode] = gene_idxs
+    gc.collect() # release the memory
     
     return barcode_gene_dict, barcodes, gene_names
 
@@ -76,25 +78,26 @@ def parse_st_h5_topvar(ENV_task, trans_filename, top_n=1000):
     
     matrix = count_matrix.matrix
     barcodes = count_matrix.barcodes
-    all_gene_names = count_matrix.all_gene_names  # All gene names
+    all_gene_names = count_matrix.all_gene_names  # All gene_idx names
     
-    # Compute variance for each gene and filter top N variable genes
+    # Compute variance for each gene_idx and filter top N variable genes
     variances = np.array(matrix.power(2).mean(axis=1) - np.square(matrix.mean(axis=1))).flatten()
     top_genes_indices = np.argsort(variances)[-top_n:]
     filtered_matrix = matrix[top_genes_indices, :]
-    top_var_gene_names = all_gene_names[top_genes_indices]  # Top variable gene names
+    # top_var_gene_names = all_gene_names[top_genes_indices]  # Top variable gene_idx names
     
     # Convert the filtered sparse matrix to dense format for easier processing
     dense_matrix = filtered_matrix.toarray().T
     print(f'with filtered matrix shape as (nb_spots, nb_genes): {dense_matrix.shape}')
     print(f'barcodes: \n{barcodes}')
-    print(f'top variable gene names: \n{top_var_gene_names}')
+    print(f'top variable gene_idx names number: \n{len(top_genes_indices)}')
     
     # Creating a dictionary with barcodes as keys and list of (gene_name, value) tuples as values
     barcode_gene_dict = {}
     for i, barcode in enumerate(barcodes):
-        gene_values = [(gene, dense_matrix[i, j]) for j, gene in enumerate(top_var_gene_names)]
-        barcode_gene_dict[barcode] = gene_values
+        gene_idxs = [(gene_idx, dense_matrix[i, gene_idx]) for gene_idx in top_genes_indices]
+        barcode_gene_dict[barcode] = gene_idxs
+    gc.collect() # release the memory
     
     return barcode_gene_dict, barcodes, all_gene_names
 
@@ -117,7 +120,7 @@ def parse_st_h5_f0_topvar0(ENV_task, trans_filename, top_n=1000):
     dense_matrix = matrix.toarray().T
     print(f'with filtered matrix shape as (nb_spots, nb_genes): {dense_matrix.shape}')
     print(f'barcodes: \n{barcodes}')
-    print(f'gene_names: \n{all_gene_names}')
+    print(f'gene_names number: \n{len(all_gene_names)}')
     
     # Compute variance for each gene and filter top N variable genes
     variances = np.array(matrix.power(2).mean(axis=1) - np.square(matrix.mean(axis=1))).flatten()
@@ -128,16 +131,18 @@ def parse_st_h5_f0_topvar0(ENV_task, trans_filename, top_n=1000):
     # Creating a dictionary with barcodes as keys and list of (gene_name, value) tuples as values
     barcode_gene_dict = {}
     for i, barcode in tqdm(enumerate(barcodes), total=len(barcodes), desc="Processing gene matrix"):
-        # gene_values = [(gene, dense_matrix[i, j]) for j, gene in enumerate(all_gene_names) if dense_matrix[i, j] != 0]
-        gene_values = [(j, dense_matrix[i, j]) for j, _ in enumerate(all_gene_names) if dense_matrix[i, j] != 0]
-        # nb_f0 = len(gene_values)
-        # gene_values += [(top_var_gene_names[idx], 0) for idx in range(len(top_var_gene_names)) if dense_matrix[i, top_genes_indices[idx]] == 0]
-        gene_values += [(idx, 0) for idx in top_genes_indices if dense_matrix[i, idx] == 0]
-        barcode_gene_dict[barcode] = gene_values
+        # gene_idxs = [(gene, dense_matrix[i, j]) for j, gene in enumerate(all_gene_names) if dense_matrix[i, j] != 0]
+        gene_idxs = [(j, dense_matrix[i, j]) for j, _ in enumerate(all_gene_names) if dense_matrix[i, j] != 0]
+        # nb_f0 = len(gene_idxs)
         
+        # gene_idxs += [(top_var_gene_names[idx], 0) for idx in range(len(top_var_gene_names)) if dense_matrix[i, top_genes_indices[idx]] == 0]
+        gene_idxs += [(idx, 0) for idx in top_genes_indices if dense_matrix[i, idx] == 0]
+        barcode_gene_dict[barcode] = gene_idxs
+
         # print(f"Barcode: {barcode}, Original Non-Zero Genes: {nb_f0},\
-        # Total after adding zeros: {len(gene_values)},\
-        # Added Zero-Expression Genes: {len(gene_values) - nb_f0}")
+        # Total after adding zeros: {len(gene_idxs)},\
+        # Added Zero-Expression Genes: {len(gene_idxs) - nb_f0}")
+    gc.collect() # release the memory
     
     return barcode_gene_dict, barcodes, all_gene_names
 
