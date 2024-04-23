@@ -6,7 +6,8 @@ Created on 16 Apr 2024
 
 from support import env_st_pre
 from trans import spot_tools
-from trans.spot_process import _h_analyze_ext_genes_for_all_barcodes
+from trans.spot_process import _h_analyze_ext_genes_for_all_barcodes, \
+    load_file_names, get_coordinates_from_csv, get_barcode_from_coord_csv
 
 
 def test_spot_tools_1():
@@ -33,11 +34,32 @@ def test_spot_process_1():
     '''
     ENV_task = env_st_pre.ENV_ST_HE_PRE
     _h_analyze_ext_genes_for_all_barcodes(ENV_task)
+    
+def test_spot_process_2():
+    '''
+    test load_file_names
+    '''
+    ENV_task = env_st_pre.ENV_ST_HE_PRE
+    cohort_names = load_file_names(ENV_task, 'cohort_file_mapping.csv')
+    print(cohort_names)
+    
+def test_spot_process_3():
+    '''
+    test get_coordinates_from_csv
+    '''
+    ENV_task = env_st_pre.ENV_ST_HE_PRE
+    corrd_csv_file_name = 'DLPFC_151507_projection.csv'
+    barcodes = get_barcode_from_coord_csv(ENV_task, corrd_csv_file_name)
+    for barcode in barcodes:
+        coord_x, coord_y = get_coordinates_from_csv(ENV_task, corrd_csv_file_name, barcode)
+        print(coord_x, coord_y)
             
 if __name__ == '__main__':
     
     # test_spot_tools_1()
-    test_spot_process_1()
+    # test_spot_process_1()
+    # test_spot_process_2()
+    test_spot_process_3()
     
     
     

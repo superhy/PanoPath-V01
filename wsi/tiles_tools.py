@@ -18,6 +18,7 @@ from wsi import image_tools, slide_tools, filter_tools
 from wsi.filter_tools import tissue_percent
 from wsi.image_tools import pil_rgb_2_ihc_dab
 
+
 Image.MAX_IMAGE_PIXELS = None
 sys.path.append("..")
 

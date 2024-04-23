@@ -9,6 +9,7 @@ class parames_basic():
     
     def __init__(self, 
                  project_name,
+                 scale_factor=16,
                  pil_image_file_format='.png'):
         """
         Args:
@@ -42,24 +43,29 @@ class parames_basic():
             if os.environ.get('USERNAME') == 'laengs2304':
                 self.DATA_DIR = 'D:/PanoPath-Project'
             else:
-                self.DATA_DIR = 'E:/PanoPath-Project'
+                # self.DATA_DIR = 'E:/PanoPath-Project' # STAT
+                self.DATA_DIR = 'F:/PanoPath-Project' # SSD
         elif self.OS_NAME == 'Darwin':
             self.DATA_DIR = '/Volumes/Extreme SSD/PanoPath-Project'
         else:
-            self.DATA_DIR = '#TODO:'
+            self.DATA_DIR = '#TODO:' # on Linux servers
             
 #         self.SLIDE_TYPE = slide_type
+        self.SCALE_FACTOR = scale_factor
         self.PIL_IMAGE_FILE_FORMAT = pil_image_file_format
             
 class parame_st_task(parames_basic):
     
     def __init__(self,
                  project_name,
+                 scale_factor,
                  pil_image_file_format,
                  tissue_stain,
+                 nb_top_genes,
                  ):
         
         super(parame_st_task, self).__init__(project_name, 
+                                             scale_factor,
                                              pil_image_file_format)
         
         self.ST_HE_LOG_DIR = os.path.join(self.PROJECT_DIR, 'data/st-he/logs')
@@ -71,11 +77,15 @@ class parame_st_task(parames_basic):
         self.ST_HE_TISSUE_FOLDER = os.path.join(self.ST_HE_DIR, 'tissue')
         self.ST_HE_TRANS_FOLDER = os.path.join(self.ST_HE_DIR, 'trans')
         self.ST_HE_VISIUM_FOLDER = os.path.join(self.ST_HE_DIR, 'visium')
+        self.ST_HE_SPOT_IMG_FOLDER = os.path.join(self.ST_HE_DIR, 'spot_img')
+        self.ST_HE_SPOT_PKL_FOLDER = os.path.join(self.ST_HE_DIR, 'spot_pkl')
+        
         self.ST_IHC_TISSUE_FOLDER = os.path.join(self.ST_IHC_DIR, 'tissue')
         self.ST_IHC_TRANS_FOLDER = os.path.join(self.ST_IHC_DIR, 'trans')
         self.ST_IHC_VISIUM_FOLDER = os.path.join(self.ST_IHC_DIR, 'visium')
         
         self.TISSUE_STAIN = tissue_stain
+        self.NB_TOP_GENES = nb_top_genes
 
 if __name__ == '__main__':
     pass

@@ -17,6 +17,21 @@ Image.MAX_IMAGE_PIXELS = None
 sys.path.append("..")
 
 
+def just_get_slide_from_openslide(slide_filepath):
+    '''
+    very directly get slide from openslide openable files
+    '''
+    slide = open_slide(slide_filepath)
+    return slide
+    
+def just_get_slide_from_normal(slide_filepath):
+    '''
+    very directly get slide from normal image files, like png or jpg
+    '''
+    img = Image.open(slide_filepath)
+    return img
+
+
 def original_slide_and_scaled_pil_image(slide_filepath, scale_factor=ENV.SCALE_FACTOR, print_opening=False):
     """
     Convert a WSI training slide to a scaled-down PIL image.

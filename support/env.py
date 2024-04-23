@@ -32,7 +32,8 @@ def _todevice(torch_item):
         
 ENV = parames_basic(
         project_name='PanoPath-V01',
-        pil_image_file_format='.png',
+        scale_factor=16,
+        pil_image_file_format='.png'
     )
 
 if __name__ == '__main__':
