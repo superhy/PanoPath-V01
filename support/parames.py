@@ -35,7 +35,7 @@ class parames_basic():
             else:
                 self.PROJECT_DIR = os.path.join('D:/workspace', self.PROJECT_NAME)
         elif self.OS_NAME == 'Darwin':
-            self.PROJECT_DIR = os.path.join('/Users/superhy/Documents/workspace', self.PROJECT_NAME)
+            self.PROJECT_DIR = os.path.join('/Users/huyang/Documents/workspace', self.PROJECT_NAME)
         else:
             self.PROJECT_DIR = os.path.join('/home/cqj236/workspace', self.PROJECT_NAME)
             

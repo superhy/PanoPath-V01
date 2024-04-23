@@ -58,8 +58,8 @@ if __name__ == '__main__':
     
     # test_spot_tools_1()
     # test_spot_process_1()
-    # test_spot_process_2()
-    test_spot_process_3()
+    test_spot_process_2()
+    # test_spot_process_3()
     
     
     
