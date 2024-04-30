@@ -7,6 +7,7 @@ import collections
 from contextlib import redirect_stdout
 import gc
 import os
+from pathlib import Path
 import pickle
 
 from tqdm import tqdm
@@ -30,9 +31,11 @@ def store_pyobject_to_pkl(store_folder,
 def load_pyobject_from_pkl(store_folder,
                            object_pkl_name):
     pkl_filepath = os.path.join(store_folder, object_pkl_name)
+    if Path(pkl_filepath).exists() is False:
+        return None
     with open(pkl_filepath, 'rb') as f_pkl:
-        store_vis_dict = pickle.load(f_pkl)
-    return store_vis_dict
+        store_pkl_obj = pickle.load(f_pkl)
+    return store_pkl_obj
 
 
 def find_file_with_prefix(prefix, folder_path):
@@ -169,6 +172,37 @@ def get_barcode_from_coord_csv(ENV_task, corrd_csv_file_name):
     df = pd.read_csv(csv_file_path)
     return list(df['Barcode'])
 
+def check_and_cleanup_cohort_folder(barcodes, folder_path):
+    """
+    Check if the number of files in a folder matches the number of barcodes.
+    If they match, print that the process is complete. If not, delete all files in the folder.
+
+    Args:
+    barcodes (list): List of barcodes expected to match the number of files.
+    folder_path (str): Path to the folder where the spot objects are stored.
+    """
+    flag_complete = False
+    
+    try:
+        files = [f for f in os.listdir(folder_path) if os.path.isfile(os.path.join(folder_path, f))]
+        num_files = len(files)
+
+        if num_files >= len(barcodes):
+            print("Processing of the cohort is complete.")
+            flag_complete = True
+        else:
+            print(f"Expected {len(barcodes)} files, but found {num_files}. Cleaning up...")
+            for file in files:
+                os.remove(os.path.join(folder_path, file))
+            print("All files have been removed for reprocessing.")
+
+    except FileNotFoundError:
+        print(f"No such directory: {folder_path}")
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
+    return flag_complete
+
+
 def get_coordinates_from_csv(ENV_task, corrd_csv_file_name, barcode):
     """
     Read a CSV file and return the X and Y coordinates for a given barcode.
@@ -184,7 +218,72 @@ def get_coordinates_from_csv(ENV_task, corrd_csv_file_name, barcode):
     df = pd.read_csv(csv_file_path)
     coordinates_row = df[df['Barcode'] == barcode]
     
-    return coordinates_row['X Coordinate'].iloc[0], coordinates_row['Y Coordinate'].iloc[0]
+    if not coordinates_row.empty:
+        return coordinates_row['X Coordinate'].iloc[0], coordinates_row['Y Coordinate'].iloc[0]
+    else:
+        return None, None
+
+def gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict):
+    '''
+    create and store the spot objects in 
+    '''
+    
+    barcode_gene_dict, barcodes_1, all_gene_names = spot_tools.parse_st_h5_f0_topvar0(ENV_task,
+                                                                             trans_filename=file_names_dict['trans'],
+                                                                             top_n=ENV_task.NB_TOP_GENES)
+    barcodes_2 = get_barcode_from_coord_csv(ENV_task, file_names_dict['coords'])
+    set_1 = set(barcodes_1)
+    set_2 = set(barcodes_2)
+    barcodes = list(set_1.intersection(set_2))
+    
+    spot_pkl_folder = os.path.join(ENV_task.ST_HE_SPOT_PKL_FOLDER, cohort_n)
+    spot_img_folder = os.path.join(ENV_task.ST_HE_SPOT_IMG_FOLDER, cohort_n)
+    if not os.path.exists(spot_img_folder):
+        os.makedirs(spot_img_folder)
+        print(f'create new cohort folder at: {spot_img_folder}')
+    if not os.path.exists(spot_pkl_folder):
+        os.makedirs(spot_pkl_folder)
+        print(f'create new cohort folder at: {spot_pkl_folder}')
+    else:
+        # check if the pkl generation is already done
+        flag_complete = check_and_cleanup_cohort_folder(barcodes, spot_pkl_folder)
+        if flag_complete:
+            del barcode_gene_dict, barcodes, all_gene_names
+            gc.collect()
+            return
+        
+    for i, barcode in tqdm(enumerate(barcodes), total=len(barcodes), desc="Loading spot pkl"):
+        tissue_filepath = os.path.join(ENV_task.ST_HE_TISSUE_FOLDER, file_names_dict['tissue'])
+        coord_x, coord_y = get_coordinates_from_csv(ENV_task, 
+                                                    corrd_csv_file_name=file_names_dict['coords'], 
+                                                    barcode=barcode)
+        if coord_x is None or coord_y is None:
+            continue
+        if barcode not in barcode_gene_dict.keys():
+            continue
+        
+        gene_infos = barcode_gene_dict[barcode]
+        gene_idx, gene_exp = zip(*gene_infos)
+        spot_img_path = os.path.join(spot_img_folder, f'{cohort_n}-{barcode}.jpg')
+        gene_names = spot_tools.load_gene_names_from_long_idx(all_gene_names, gene_idx)
+        
+        spot = spot_tools.Spot(cohort_name=cohort_n, barcode=barcode, cancer_type=cohort_metas_dict['organ'], 
+                               spot_size=cohort_metas_dict['spot_size'], 
+                               gene_names=gene_names, 
+                               gene_exp=gene_exp, 
+                               org_nb_gene=len(all_gene_names),  
+                               slide_path=tissue_filepath, img_path=spot_img_path, 
+                               coord_h=coord_y, coord_w=coord_x, 
+                               small_h_s=None, small_h_e=None, small_w_s=None, small_w_e=None, 
+                               large_h_s=None, large_h_e=None, large_w_s=None, large_w_e=None)
+        spot_pkl_name = f'{cohort_n}-{barcode}.pkl'
+        store_pyobject_to_pkl(spot_pkl_folder, spot, spot_pkl_name)
+        
+        # del gene_infos, gene_idx, gene_exp, gene_names, spot
+    print(f'store {len(barcodes)} spot pkl files in folder: {spot_pkl_folder}')
+        
+    del barcode_gene_dict, barcodes, all_gene_names
+    gc.collect()
 
 def _process_gen_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name):
     '''
@@ -196,50 +295,56 @@ def _process_gen_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name
     for cohort_n in cohort_names:
         file_names_dict = query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_n)
         cohort_metas_dict = query_file_meta_info_for_cohort(ENV_task, meta_csv_f_name, cohort_n)
+            
+        gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict)
         
-        barcode_gene_dict, barcodes, all_gene_names = spot_tools.parse_st_h5_f0_topvar0(ENV_task, 
-                                                                                        trans_filename=file_names_dict['trans'], 
-                                                                                        top_n=ENV_task.NB_TOP_GENES)
+def _process_repair_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name, broken_cohort_names):
+    '''
+    repair to gene information and image store path for all spots from part cohorts (specified)
+    only generate the spot object on disk, load image next time to save memory 
+    '''
+    # load cohort names (cohort_id)
+    for cohort_n in broken_cohort_names:
+        file_names_dict = query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_n)
+        cohort_metas_dict = query_file_meta_info_for_cohort(ENV_task, meta_csv_f_name, cohort_n)
+            
+        gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict)
         
-        spot_pkl_folder = os.path.join(ENV_task.ST_HE_SPOT_PKL_FOLDER, cohort_n)
-        spot_img_folder = os.path.join(ENV_task.ST_HE_SPOT_IMG_FOLDER, cohort_n)
-        if not os.path.exists(spot_pkl_folder):
-            os.makedirs(spot_pkl_folder)
-            # print(f'create new cohort folder at: {spot_pkl_folder}')
-        # if not os.path.exists(spot_img_folder):
-        #     os.makedirs(spot_img_folder)
-            # print(f'create new cohort folder at: {spot_img_folder}')
-        for i, barcode in tqdm(enumerate(barcodes), total=len(barcodes), desc="Loading spot pkl"):
-            tissue_filepath = os.path.join(ENV_task.ST_HE_TISSUE_FOLDER, file_names_dict['tissue'])
-            coord_x, coord_y = get_coordinates_from_csv(ENV_task, 
-                                                        corrd_csv_file_name=file_names_dict['coords'], 
-                                                        barcode=barcode)
-            gene_infos = barcode_gene_dict[barcode]
-            gene_idx, gene_exp = zip(*gene_infos)
-            spot_img_path = os.path.join(spot_img_folder, f'{cohort_n}-{barcode}.jpg')
-            gene_names = spot_tools.load_gene_names_from_long_idx(all_gene_names, gene_idx)
+def save_img_single_spot(spot, tissue_img, spot_pkl_folder, spot_pkl_name):
+    '''
+    '''
+    if tissue_img is None:
+        if spot.slide_path.endswith('.jpg'):
+            tissue_img = slide_tools.just_get_slide_from_normal(spot.slide_path)
+            cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
+                                                                                              coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                                              patch_size=spot.spot_size)
+        else:
+            tissue_img = slide_tools.just_get_slide_from_openslide(spot.slide_path)
+            cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
+                                                                                        coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                                        patch_size=spot.spot_size)
+    else:
+        if spot.slide_path.endswith('.jpg'):
+            cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
+                                                                                              coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                                              patch_size=spot.spot_size)
+        else:
+            cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
+                                                                                        coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                                        patch_size=spot.spot_size)
+    
+    cropped_img.save(spot.img_path, "JPEG")
+    # cropped_img.save(spot.img_path.replace('.jpg', '.png'), "PNG")
+    # cropped_img.save(spot.img_path.replace('.png', '.jpg'), "JPEG")
+    spot.reset_large_loc(la_w_s, la_w_e, la_h_s, la_h_e)
+    store_pyobject_to_pkl(spot_pkl_folder, spot, spot_pkl_name)
+    
+    del spot
+    gc.collect()
+    return tissue_img
             
-            spot = spot_tools.Spot(cohort_name=cohort_n, barcode=barcode, cancer_type=cohort_metas_dict['organ'], 
-                                   spot_size=cohort_metas_dict['spot_size'], 
-                                   gene_names=gene_names, 
-                                   gene_exp=gene_exp, 
-                                   org_nb_gene=len(all_gene_names),  
-                                   slide_path=tissue_filepath, img_path=spot_img_path, 
-                                   coord_h=coord_y, coord_w=coord_x, 
-                                   small_h_s=None, small_h_e=None, small_w_s=None, small_w_e=None, 
-                                   large_h_s=None, large_h_e=None, large_w_s=None, large_w_e=None)
-            spot_pkl_name = f'{cohort_n}-{barcode}.pkl'
-            store_pyobject_to_pkl(spot_pkl_folder, spot, spot_pkl_name)
-            
-            del gene_infos, gene_idx, gene_exp, gene_names, spot
-            gc.collect()
-            
-        print(f'store {len(barcodes)} spot pkl files in folder: {spot_pkl_folder}')
-        
-        del barcode_gene_dict, barcodes, all_gene_names
-        gc.collect()
-            
-def _process_gen_spots_img_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name):
+def _process_gen_spots_img_cohorts(ENV_task, mapping_csv_f_name):
     '''
     according the stored spot pkl to generate the spot pacth images
     '''
@@ -254,34 +359,32 @@ def _process_gen_spots_img_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name
         for i, barcode in tqdm(enumerate(barcodes), total=len(barcodes), desc="Loading spot image"):
             spot_pkl_name = f'{cohort_n}-{barcode}.pkl'
             spot = load_pyobject_from_pkl(spot_pkl_folder, spot_pkl_name)
+            if spot is None:
+                continue
+            tissue_img = save_img_single_spot(spot, tissue_img, spot_pkl_folder, spot_pkl_name)
             
-            if tissue_img is None:
-                if spot.slide_path.endswith('.jpg'):
-                    tissue_img = slide_tools.just_get_slide_from_normal(spot.slide_path)
-                    cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
-                                                                                                      coord_x=spot.coord_w, coord_y=spot.coord_h,
-                                                                                                      patch_size=spot.spot_size)
-                else:
-                    tissue_img = slide_tools.just_get_slide_from_openslide(spot.slide_path)
-                    cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
-                                                                                                coord_x=spot.coord_w, coord_y=spot.coord_h,
-                                                                                                patch_size=spot.spot_size)
-            else:
-                if spot.slide_path.endswith('.jpg'):
-                    cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
-                                                                                                      coord_x=spot.coord_w, coord_y=spot.coord_h,
-                                                                                                      patch_size=spot.spot_size)
-                else:
-                    cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
-                                                                                                coord_x=spot.coord_w, coord_y=spot.coord_h,
-                                                                                                patch_size=spot.spot_size)
-            
-            cropped_img.save(spot.img_path, "JPEG")
-            spot.reset_large_loc(la_w_s, la_w_e, la_h_s, la_h_e)
-            store_pyobject_to_pkl(spot_pkl_folder, spot, spot_pkl_name)
-            
-            del spot
-            gc.collect()
+        print(f'extract {len(barcodes)} spot images in folder: {spot_img_folder}')
+        
+        del tissue_img
+        gc.collect()
+        
+def _process_repair_spots_img_cohorts(ENV_task, mapping_csv_f_name, broken_cohort_names):
+    '''
+    according the stored spot pkl to repair/generate the spot pacth images, for specified cohorts
+    '''
+    for cohort_n in broken_cohort_names:
+        file_names_dict = query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_n)
+        barcodes = get_barcode_from_coord_csv(ENV_task, file_names_dict['coords'])
+        spot_pkl_folder = os.path.join(ENV_task.ST_HE_SPOT_PKL_FOLDER, cohort_n)
+        spot_img_folder = os.path.join(ENV_task.ST_HE_SPOT_IMG_FOLDER, cohort_n)
+        
+        tissue_img = None
+        for i, barcode in tqdm(enumerate(barcodes), total=len(barcodes), desc="Loading spot image"):
+            spot_pkl_name = f'{cohort_n}-{barcode}.pkl'
+            spot = load_pyobject_from_pkl(spot_pkl_folder, spot_pkl_name)
+            if spot is None:
+                continue
+            tissue_img = save_img_single_spot(spot, tissue_img, spot_pkl_folder, spot_pkl_name)
             
         print(f'extract {len(barcodes)} spot images in folder: {spot_img_folder}')
         
@@ -446,6 +549,60 @@ def _h_analyze_ext_genes_for_all_barcodes(ENV_task):
     # plt.ylim(0, 200)
     # plt.tight_layout()
     # plt.show()
+    
+def _h_statistic_spot_pkl_gene_feature(ENV_task):
+    '''
+    Statistic how much is the average, max, min length of gene features we selected
+    '''
+    spot_pkl_folder_path = ENV_task.ST_HE_SPOT_PKL_FOLDER
+    cohort_names = load_file_names(ENV_task, 'cohort_file_mapping.csv')
+    
+    cohort_gene_f_len_dict = {}
+    for cohort_n in cohort_names:
+        cohort_folder = os.path.join(spot_pkl_folder_path, cohort_n)
+        filenames = [f for f in os.listdir(cohort_folder) if f.endswith('.pkl')]
+        
+        gene_f_len_list = []
+        for pkl_name in tqdm(filenames, desc="Loading .pkl files"):
+            spot = load_pyobject_from_pkl(cohort_folder, pkl_name)
+            gene_f_len_list.append(len(spot.gene_exp))
+            
+        nd_gene_f_lens = np.array(gene_f_len_list)
+        max_gene_f_len = np.max(nd_gene_f_lens)
+        min_gene_f_len = np.min(nd_gene_f_lens)
+        avg_gene_f_len = np.average(nd_gene_f_lens)
+        print(f'In cohort: {cohort_n}, max_gene_f_length: {max_gene_f_len}, \
+        min_gene_f_length: {min_gene_f_len}, avg_gene_f_length: {avg_gene_f_len}')
+        
+        cohort_gene_f_len_dict[cohort_n] = avg_gene_f_len
+        
+    data = pd.DataFrame(list(cohort_gene_f_len_dict.items()), columns=['Cohort', 'Value'])
+
+    plt.figure(figsize=(10, 6))  
+    sns.barplot(x='Cohort', y='Value', data=data, palette='viridis')
+    plt.title('Gene Feature Length Across Cohorts')  
+    plt.xlabel('Cohort')  
+    plt.ylabel('Gene feature length')  
+    plt.xticks(rotation=90)
+    plt.tight_layout()
+    save_path_sta = os.path.join(ENV_task.ST_HE_LOG_DIR, 'Gene-feature-length.png')
+    plt.savefig(save_path_sta)
+    print(f'save plot: {save_path_sta}')
+    # plt.show()
+    
+def _h_count_spot_num(ENV_task):
+    '''
+    count how many spot (patch images) we have
+    '''
+    spot_pkl_folder_path = ENV_task.ST_HE_SPOT_PKL_FOLDER
+    cohort_names = load_file_names(ENV_task, 'cohort_file_mapping.csv')
+    
+    nb_spot = 0
+    for cohort_n in cohort_names:
+        cohort_folder = os.path.join(spot_pkl_folder_path, cohort_n)
+        filenames = [f for f in os.listdir(cohort_folder) if f.endswith('.pkl')]
+        nb_spot += len(filenames)
+    print(f'totally have {nb_spot} spots.')
 
 if __name__ == '__main__':
     '''

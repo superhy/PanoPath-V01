@@ -5,8 +5,7 @@
 import math
 import sys
 
-import PIL
-from PIL.Image import Image
+from PIL import Image
 from openslide import open_slide
 
 from support.env import ENV
@@ -54,7 +53,7 @@ def original_slide_and_scaled_pil_image(slide_filepath, scale_factor=ENV.SCALE_F
     whole_slide_image = slide.read_region((0, 0), level, slide.level_dimensions[level])
     whole_slide_image = whole_slide_image.convert("RGB")
     # scale the WSI image (with the reshape function)
-    img = whole_slide_image.resize((small_w, small_h), PIL.Image.BILINEAR)
+    img = whole_slide_image.resize((small_w, small_h), Image.BILINEAR)
     
     return img, slide
 
@@ -85,7 +84,7 @@ def slide_to_scaled_pil_image(slide_filepath, scale_factor=ENV.SCALE_FACTOR, pri
     whole_slide_image = slide.read_region((0, 0), level, slide.level_dimensions[level])
     whole_slide_image = whole_slide_image.convert("RGB")
     # scale the WSI image (with the reshape function)
-    img = whole_slide_image.resize((small_w, small_h), PIL.Image.BILINEAR)
+    img = whole_slide_image.resize((small_w, small_h), Image.BILINEAR)
     
     return img, large_w, large_h, small_w, small_h
 

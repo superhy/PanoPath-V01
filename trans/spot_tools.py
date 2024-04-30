@@ -177,12 +177,12 @@ def crop_spot_patch_from_img(img, coord_x, coord_y, patch_size):
     '''
     load the cropped patch for each Spot from normal image file (some slides are jpg)
     '''
-    large_w_s = coord_x - patch_size // 2
-    large_h_s = coord_y - patch_size // 2
-    large_w_e = coord_x + patch_size // 2
-    large_h_e = coord_y + patch_size // 2
-    
-    cropped_img = img.crop((large_w_s, large_w_e, large_h_s, large_h_e))
+    large_w_s = max(coord_x - patch_size // 2, 0)  # left, not less than 0
+    large_h_s = max(coord_y - patch_size // 2, 0)  # upper, not less than 0
+    large_w_e = min(coord_x + patch_size // 2, img.width)  # right, not more than image width
+    large_h_e = min(coord_y + patch_size // 2, img.height)  # lower, not more than image height
+
+    cropped_img = img.crop((large_w_s, large_h_s, large_w_e, large_h_e))
     return cropped_img, large_w_s, large_w_e, large_h_s, large_h_e
 
 class Spot:

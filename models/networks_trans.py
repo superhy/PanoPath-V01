@@ -8,12 +8,16 @@ import torch
 import torch.nn as nn
 from transformers import BertModel, BertConfig
 
-class GeneTransformer(nn.Module):
+class GeneBasicTransformer(nn.Module):
     """
+    The basic gene expression embedding transformer
     """
     
     def __init__(self, vocab_size, hidden_dim, n_heads, n_layers, dropout):
-        super(GeneTransformer, self).__init__()
+        super(GeneBasicTransformer, self).__init__()
+        
+        self.network_name = 'GeneBasicTransformer'
+        
         self.gene_embedding = nn.Embedding(vocab_size, hidden_dim)
         self.expr_embedding = nn.Linear(1, hidden_dim)
         self.combine_layer = nn.Linear(2 * hidden_dim, hidden_dim)  # Combine layer
@@ -36,6 +40,56 @@ class GeneTransformer(nn.Module):
         x = torch.mean(x, dim=1)
         
         return self.output_layer(x)
+    
+    
+class GeneNameHashTokenizer:
+    """
+    The basic Tokenizer function for gene name list
+    just Hash each gene name to a id, from a big gene names vocab
+    """
+    
+    def __init__(self, gene_names):
+        
+        self.network_name = 'GeneNameHashTokenizer'
+        
+        self.vocab = {gene: idx for idx, gene in enumerate(sorted(set(gene_names)))}
+        self.inverse_vocab = {idx: gene for gene, idx in self.vocab.items()}
+
+    def encode(self, gene_names):
+        return [self.vocab.get(name, -1) for name in gene_names]
+
+    def decode(self, indices):
+        return [self.inverse_vocab.get(index, "<UNK>") for index in indices]
+    
+    
+    
+    
+    
+    
+    
+''' --------- some unit test functions --------- '''
+
+def _test_embedding_gene_exp():
+    '''
+    '''
+    all_gene_names = ['gene1', 'gene2', 'gene3', 'gene4', 'gene5', 'gene6', 'gene7', 'gene8']
+    tokenizer = GeneNameHashTokenizer(all_gene_names)
+    vocab_size = len(tokenizer.vocab)  # size of vocab
+    
+    # initialize the Transformer
+    model = GeneBasicTransformer(vocab_size, hidden_dim=512, n_heads=4, n_layers=3, dropout=0.3)
+    
+    sample_gene_names = ['gene1', 'gene4', 'gene6', 'gene2']
+    sample_expr_values = [0.5, 1.2, 0.3, 0.7]
+    
+    # encode gene names
+    encoded_genes = tokenizer.encode(sample_gene_names)
+    encoded_genes_tensor = torch.tensor(encoded_genes, dtype=torch.long).unsqueeze(0) # add the dim for batch
+    # trans the gene expression to tensor
+    expr_values_tensor = torch.tensor(sample_expr_values, dtype=torch.float).unsqueeze(0)
+    
+    encoded_vectors = model(encoded_genes_tensor, expr_values_tensor)
+    print("Encoded vectors:", encoded_vectors)
 
 if __name__ == '__main__':
     pass

@@ -1,0 +1,212 @@
+with filtered matrix shape as (nb_spots, nb_genes): (9080, 18085)
+barcodes: 
+['AACAATCCGAGTGGAC-1' 'AACAATGGAACCACAT-1' 'AACAATTATCTGCGCC-1' ...
+ 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+gene_names number: 
+18085
+Expected 9080 files, but found 0. Cleaning up...
+All files have been removed for reprocessing.
+store 9080 spot pkl files in folder: F:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Colorectal_Cancer
+with filtered matrix shape as (nb_spots, nb_genes): (10878, 18085)
+barcodes: 
+['AACAATCCGAGTGGAC-1' 'AACAATGTGCTCCGAG-1' 'AACAATTATCTGCGCC-1' ...
+ 'TGTTGGTGCGCACGAG-1' 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1']
+gene_names number: 
+18085
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (5936, 18085)
+barcodes: 
+['AACAATGGAACCACAT-1' 'AACAATGTGCTCCGAG-1' 'AACACCAGCCTACTCG-1' ...
+ 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+gene_names number: 
+18085
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (6195, 18085)
+barcodes: 
+['AACAATCCGAGTGGAC-1' 'AACAATGGAACCACAT-1' 'AACACCAGCCTACTCG-1' ...
+ 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+gene_names number: 
+18085
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4674, 18085)
+barcodes: 
+['AACAATGTGCTCCGAG-1' 'AACACCATTCGCATAC-1' 'AACACGTTGATACCGC-1' ...
+ 'TGTTGGTGCGCACGAG-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+gene_names number: 
+18085
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3858, 18085)
+barcodes: 
+['AACACGTGCATCGCAC-1' 'AACACTTGGCAAGGAA-1' 'AACAGGATTCATAGTT-1' ...
+ 'TGTTGGAAGCTCGGTA-1' 'TGTTGGATGGACTTCT-1' 'TGTTGGCCAGACCTAC-1']
+gene_names number: 
+18085
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (1657, 18085)
+barcodes: 
+['AACACTTGGCAAGGAA-1' 'AACAGGATTCATAGTT-1' 'AACATCTAATGACCGG-1' ...
+ 'TGTTGGAACCTTCCGC-1' 'TGTTGGATGGACTTCT-1' 'TGTTGGCCAGACCTAC-1']
+gene_names number: 
+18085
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4226, 33538)
+barcodes: 
+['AAACAACGAATAGTTC-1' 'AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4384, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4789, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4634, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3661, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3498, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4110, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4015, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3639, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3673, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3592, 33538)
+barcodes: 
+['AAACAACGAATAGTTC-1' 'AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3460, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4325, 36601)
+barcodes: 
+['AAACAACGAATAGTTC-1' 'AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+36601
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3138, 36601)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+36601
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3468, 36601)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1']
+gene_names number: 
+36601
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3813, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+33538
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3987, 36601)
+barcodes: 
+['AAACAACGAATAGTTC-1' 'AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+36601
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4035, 36601)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+36601
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (2781, 17943)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTCAGTGTGCTAC-1' 'TTGTTGTGTGTCAAGA-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+17943
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (2660, 17943)
+barcodes: 
+['AAACAATCTACTAGCA-1' 'AAACAGCTTTCAGAAG-1' 'AAACAGGGTCTATATT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+17943
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3455, 17943)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+17943
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (3043, 17943)
+barcodes: 
+['AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+17943
+Processing of the cohort is complete.
+with filtered matrix shape as (nb_spots, nb_genes): (4898, 36601)
+barcodes: 
+['AAACAACGAATAGTTC-1' 'AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+gene_names number: 
+36601
+Processing of the cohort is complete.
