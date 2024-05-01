@@ -5,8 +5,11 @@ Created on 12 Apr 2024
 '''
 
 import torch
-import torch.nn as nn
 from transformers import BertModel, BertConfig
+
+import torch.nn as nn
+from trans.spot_tools import GeneNameHashTokenizer
+
 
 class GeneBasicTransformer(nn.Module):
     """
@@ -40,28 +43,6 @@ class GeneBasicTransformer(nn.Module):
         x = torch.mean(x, dim=1)
         
         return self.output_layer(x)
-    
-    
-class GeneNameHashTokenizer:
-    """
-    The basic Tokenizer function for gene name list
-    just Hash each gene name to a id, from a big gene names vocab
-    """
-    
-    def __init__(self, gene_names):
-        
-        self.network_name = 'GeneNameHashTokenizer'
-        
-        self.vocab = {gene: idx for idx, gene in enumerate(sorted(set(gene_names)))}
-        self.inverse_vocab = {idx: gene for gene, idx in self.vocab.items()}
-
-    def encode(self, gene_names):
-        return [self.vocab.get(name, -1) for name in gene_names]
-
-    def decode(self, indices):
-        return [self.inverse_vocab.get(index, "<UNK>") for index in indices]
-    
-    
     
     
     

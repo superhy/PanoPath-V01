@@ -41,7 +41,8 @@ class parames_basic():
             
         if self.OS_NAME == 'Windows':
             if os.environ.get('USERNAME') == 'laengs2304':
-                self.DATA_DIR = 'D:/PanoPath-Project'
+                # self.DATA_DIR = 'D:/PanoPath-Project' # local
+                self.DATA_DIR = 'E:/PanoPath-Project' # SSD
             else:
                 # self.DATA_DIR = 'E:/PanoPath-Project' # STAT
                 self.DATA_DIR = 'F:/PanoPath-Project' # SSD
@@ -70,6 +71,7 @@ class parame_st_task(parames_basic):
         
         self.ST_HE_LOG_DIR = os.path.join(self.PROJECT_DIR, 'data/st-he/logs')
         self.ST_HE_META_DIR = os.path.join(self.PROJECT_DIR, 'data/st-he/meta')
+        self.ST_HE_CACHE_DIR = os.path.join(self.PROJECT_DIR, 'data/st-he/cache')
         self.ST_HE_DIR = os.path.join(self.DATA_DIR, 'st-he')
         self.ST_IHC_DIR = os.path.join(self.DATA_DIR, 'st-ihc')
         

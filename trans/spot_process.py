@@ -9,6 +9,7 @@ import gc
 import os
 from pathlib import Path
 import pickle
+import sys
 
 from tqdm import tqdm
 
@@ -102,6 +103,26 @@ def load_file_names(ENV_task, mapping_csv_f_name):
     # Find the row corresponding to the given cohort name
     return list(df['cohort'])
 
+def load_all_gene_names_vocab(ENV_task, mapping_csv_f_name):
+    '''
+    load all gene names as a big vocabulary as store in cache folder
+    '''
+    cohort_names = load_file_names(ENV_task, mapping_csv_f_name)
+    
+    all_gene_set = set()
+    for i, cohort_n in tqdm(enumerate(cohort_names), total=len(cohort_names), desc="Loading all gene names"):
+        file_names_dict = query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_n)
+        filtered_h5_path = os.path.join(ENV_task.ST_HE_TRANS_FOLDER, file_names_dict['trans'])
+        count_matrix = spot_tools.get_matrix_from_h5(filtered_h5_path)
+        cohort_gene_names = count_matrix.all_gene_names
+        all_gene_set.update(cohort_gene_names)
+        
+    all_gene_names = list(all_gene_set)
+    
+    Gene_Tokenizer = spot_tools.GeneNameHashTokenizer(all_gene_names)
+    store_pyobject_to_pkl(ENV_task.ST_HE_CACHE_DIR, Gene_Tokenizer, 'gene_tokenizer.pkl')
+    print(f'store the Gene_Tokenizer at: {ENV_task.ST_HE_CACHE_DIR}/gene_tokenizer.pkl')
+
 def query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_name):
     """
     Load data from a CSV file and return the file names for a given cohort name.
@@ -159,6 +180,7 @@ def query_file_meta_info_for_cohort(ENV_task, meta_csv_f_name, cohort_name):
         'cohort': row['cohort'].values[0], # cohort_id
         'organ': row['organ'].values[0],
         'spot_size': row['spot_size'].values[0],
+        'context_size': row['context_size'].values[0]
     }
     
     return cohort_metas
@@ -223,14 +245,15 @@ def get_coordinates_from_csv(ENV_task, corrd_csv_file_name, barcode):
     else:
         return None, None
 
-def gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict):
+def gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict, gene_vocab):
     '''
     create and store the spot objects in 
     '''
     
-    barcode_gene_dict, barcodes_1, all_gene_names = spot_tools.parse_st_h5_f0_topvar0(ENV_task,
-                                                                             trans_filename=file_names_dict['trans'],
-                                                                             top_n=ENV_task.NB_TOP_GENES)
+    barcode_gene_dict, barcodes_1 = spot_tools.parse_st_h5_f0_topvar0(ENV_task,
+                                                                      trans_filename=file_names_dict['trans'],
+                                                                      gene_vocab=gene_vocab,
+                                                                      top_n=ENV_task.NB_TOP_GENES)
     barcodes_2 = get_barcode_from_coord_csv(ENV_task, file_names_dict['coords'])
     set_1 = set(barcodes_1)
     set_2 = set(barcodes_2)
@@ -248,7 +271,7 @@ def gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict
         # check if the pkl generation is already done
         flag_complete = check_and_cleanup_cohort_folder(barcodes, spot_pkl_folder)
         if flag_complete:
-            del barcode_gene_dict, barcodes, all_gene_names
+            del barcode_gene_dict, barcodes
             gc.collect()
             return
         
@@ -265,50 +288,67 @@ def gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict
         gene_infos = barcode_gene_dict[barcode]
         gene_idx, gene_exp = zip(*gene_infos)
         spot_img_path = os.path.join(spot_img_folder, f'{cohort_n}-{barcode}.jpg')
-        gene_names = spot_tools.load_gene_names_from_long_idx(all_gene_names, gene_idx)
+        spot_ctx_img_path = os.path.join(spot_img_folder, f'{cohort_n}-{barcode}-ctx.jpg')
         
         spot = spot_tools.Spot(cohort_name=cohort_n, barcode=barcode, cancer_type=cohort_metas_dict['organ'], 
-                               spot_size=cohort_metas_dict['spot_size'], 
-                               gene_names=gene_names, 
-                               gene_exp=gene_exp, 
-                               org_nb_gene=len(all_gene_names),  
-                               slide_path=tissue_filepath, img_path=spot_img_path, 
+                               spot_size=cohort_metas_dict['spot_size'],
+                               spot_context_size=cohort_metas_dict['context_size'],
+                               gene_ids=gene_idx, gene_exp=gene_exp, 
+                               slide_path=tissue_filepath, img_path=spot_img_path, context_img_path=spot_ctx_img_path,
                                coord_h=coord_y, coord_w=coord_x, 
                                small_h_s=None, small_h_e=None, small_w_s=None, small_w_e=None, 
-                               large_h_s=None, large_h_e=None, large_w_s=None, large_w_e=None)
+                               large_h_s=None, large_h_e=None, large_w_s=None, large_w_e=None,
+                               ctx_small_h_s=None, ctx_small_h_e=None, ctx_small_w_s=None, ctx_small_w_e=None, 
+                               ctx_large_h_s=None, ctx_large_h_e=None, ctx_large_w_s=None, ctx_large_w_e=None)
         spot_pkl_name = f'{cohort_n}-{barcode}.pkl'
         store_pyobject_to_pkl(spot_pkl_folder, spot, spot_pkl_name)
         
         # del gene_infos, gene_idx, gene_exp, gene_names, spot
     print(f'store {len(barcodes)} spot pkl files in folder: {spot_pkl_folder}')
         
-    del barcode_gene_dict, barcodes, all_gene_names
+    del barcode_gene_dict, barcodes
     gc.collect()
 
-def _process_gen_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name):
+def _process_gen_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name, gene_vocab_name):
     '''
     load gene information and image store path for all spots from all cohorts
     only generate the spot object on disk, load image next time to save memory 
     '''
+    gene_vocab_path = os.path.join(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    if not os.path.exists(gene_vocab_path):
+        print("Error: Gene vocabulary file does not exist.")
+        print("Please run the gene vocabulary generation and storage process first.")
+        sys.exit(1)
+    
+    gene_tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    
     # load cohort names (cohort_id)
     cohort_names = load_file_names(ENV_task, mapping_csv_f_name)
     for cohort_n in cohort_names:
         file_names_dict = query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_n)
         cohort_metas_dict = query_file_meta_info_for_cohort(ENV_task, meta_csv_f_name, cohort_n)
             
-        gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict)
+        gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict, gene_tokenizer.vocab)
         
-def _process_repair_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name, broken_cohort_names):
+def _process_repair_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_name, broken_cohort_names, gene_vocab_name):
     '''
     repair to gene information and image store path for all spots from part cohorts (specified)
     only generate the spot object on disk, load image next time to save memory 
     '''
+    gene_vocab_path = os.path.join(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    if not os.path.exists(gene_vocab_path):
+        print("Error: Gene vocabulary file does not exist.")
+        print("Please run the gene vocabulary generation and storage process first.")
+        sys.exit(1)
+    
+    gene_tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    
     # load cohort names (cohort_id)
     for cohort_n in broken_cohort_names:
         file_names_dict = query_file_names_for_cohort(ENV_task, mapping_csv_f_name, cohort_n)
         cohort_metas_dict = query_file_meta_info_for_cohort(ENV_task, meta_csv_f_name, cohort_n)
             
-        gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict)
+        gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict, gene_tokenizer.vocab)
         
 def save_img_single_spot(spot, tissue_img, spot_pkl_folder, spot_pkl_name):
     '''
