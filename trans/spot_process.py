@@ -353,31 +353,50 @@ def _process_repair_spots_pkl_cohorts(ENV_task, mapping_csv_f_name, meta_csv_f_n
 def save_img_single_spot(spot, tissue_img, spot_pkl_folder, spot_pkl_name):
     '''
     '''
+    
     if tissue_img is None:
         if spot.slide_path.endswith('.jpg'):
             tissue_img = slide_tools.just_get_slide_from_normal(spot.slide_path)
             cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
                                                                                               coord_x=spot.coord_w, coord_y=spot.coord_h,
                                                                                               patch_size=spot.spot_size)
+            ctx_cropped_img, ctx_la_w_s, ctx_la_w_e, \
+            ctx_la_h_s, ctx_la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
+                                                                         coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                         patch_size=spot.spot_context_size)
         else:
             tissue_img = slide_tools.just_get_slide_from_openslide(spot.slide_path)
             cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
                                                                                         coord_x=spot.coord_w, coord_y=spot.coord_h,
                                                                                         patch_size=spot.spot_size)
+            ctx_cropped_img, ctx_la_w_s, ctx_la_w_e, \
+            ctx_la_h_s, ctx_la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
+                                                                           coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                           patch_size=spot.spot_context_size)
     else:
         if spot.slide_path.endswith('.jpg'):
             cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
                                                                                               coord_x=spot.coord_w, coord_y=spot.coord_h,
                                                                                               patch_size=spot.spot_size)
+            ctx_cropped_img, ctx_la_w_s, ctx_la_w_e, \
+            ctx_la_h_s, ctx_la_h_e = spot_tools.crop_spot_patch_from_img(tissue_img,
+                                                                         coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                         patch_size=spot.spot_context_size)
         else:
             cropped_img, la_w_s, la_w_e, la_h_s, la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
                                                                                         coord_x=spot.coord_w, coord_y=spot.coord_h,
                                                                                         patch_size=spot.spot_size)
+            ctx_cropped_img, ctx_la_w_s, ctx_la_w_e, \
+            ctx_la_h_s, ctx_la_h_e = spot_tools.crop_spot_patch_from_slide(tissue_img,
+                                                                           coord_x=spot.coord_w, coord_y=spot.coord_h,
+                                                                           patch_size=spot.spot_context_size)
     
     cropped_img.save(spot.img_path, "JPEG")
+    ctx_cropped_img.save(spot.context_img_path, "JPEG")
     # cropped_img.save(spot.img_path.replace('.jpg', '.png'), "PNG")
     # cropped_img.save(spot.img_path.replace('.png', '.jpg'), "JPEG")
     spot.reset_large_loc(la_w_s, la_w_e, la_h_s, la_h_e)
+    spot.reset_ctx_large_loc(ctx_la_w_s, ctx_la_w_e, ctx_la_h_s, ctx_la_h_e)
     store_pyobject_to_pkl(spot_pkl_folder, spot, spot_pkl_name)
     
     del spot

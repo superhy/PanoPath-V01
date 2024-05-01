@@ -16,7 +16,8 @@ from trans.spot_process import _prod_st_cohort_names_from_folder, \
 
 
 # task_ids = [0.9]
-task_ids = [1]
+# task_ids = [1]
+task_ids = [1.2]
 # task_ids = [1.1]
 # task_ids = [1.3]
 
