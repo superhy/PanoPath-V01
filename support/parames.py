@@ -44,8 +44,8 @@ class parames_basic():
                 # self.DATA_DIR = 'D:/PanoPath-Project' # local
                 self.DATA_DIR = 'E:/PanoPath-Project' # SSD
             else:
-                # self.DATA_DIR = 'E:/PanoPath-Project' # STAT
-                self.DATA_DIR = 'F:/PanoPath-Project' # SSD
+                self.DATA_DIR = 'E:/PanoPath-Project' # STAT
+                # self.DATA_DIR = 'F:/PanoPath-Project' # SSD
         elif self.OS_NAME == 'Darwin':
             self.DATA_DIR = '/Volumes/Extreme SSD/PanoPath-Project'
         else:
