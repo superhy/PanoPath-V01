@@ -33,14 +33,14 @@ class GeneBasicTransformer(nn.Module):
     def forward(self, gene_ids, expr_values):
         gene_embeds = self.gene_embedding(gene_ids)
         expr_embeds = self.expr_embedding(expr_values.unsqueeze(-1))
-        print(gene_embeds.shape, expr_embeds.shape)
+        # print(gene_embeds.shape, expr_embeds.shape)
         
         # Combine embeddings by concatenation and then process
         x = torch.cat([gene_embeds, expr_embeds], dim=-1)
         x = self.combine_layer(x)
         # Transformer without positional encoding
         x = self.transformer.encoder(x)
-        print(x.shape)
+        # print(x.shape)
         # Some pooling or aggregation if necessary
         x = torch.mean(x, dim=1)
         
