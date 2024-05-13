@@ -4,11 +4,17 @@ Created on 16 Apr 2024
 @author: huyang
 '''
 
+import os
+
+import torch
+
+from models.networks_trans import GeneBasicTransformer
 from support import env_st_pre
 from trans import spot_tools
 from trans.spot_process import _h_analyze_ext_genes_for_all_barcodes, \
     load_file_names, get_coordinates_from_csv, get_barcode_from_coord_csv, \
-    _h_statistic_spot_pkl_gene_feature, _h_count_spot_num
+    _h_statistic_spot_pkl_gene_feature, _h_count_spot_num, \
+    load_pyobject_from_pkl
 
 
 def test_spot_tools_1():
@@ -70,6 +76,34 @@ def test_spot_process_5():
     '''
     ENV_task = env_st_pre.ENV_ST_HE_PRE
     _h_count_spot_num(ENV_task)
+    
+def test_embedding_gene_exp():
+    '''
+    '''
+    ENV_task = env_st_pre.ENV_ST_HE_PRE
+    gene_vocab_name = 'gene_tokenizer.pkl'
+    tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    vocab_size = len(tokenizer.vocab)  # size of vocab
+    
+    # initialize the Transformer
+    model = GeneBasicTransformer(vocab_size, hidden_dim=512, n_heads=4, n_layers=3, dropout=0.3)
+    
+    test_spot_obj_name = os.path.join('CytAssist_11mm_FFPE_Human_Colorectal_Cancer', 
+                                      'CytAssist_11mm_FFPE_Human_Colorectal_Cancer-AACAATCCGAGTGGAC-1.pkl')
+    test_spot = load_pyobject_from_pkl(ENV_task.ST_HE_SPOT_PKL_FOLDER, test_spot_obj_name)
+    
+    # encode gene names
+    # encoded_genes = tokenizer.encode(test_spot.gene_ids)
+    encoded_genes_tensor = torch.tensor(test_spot.gene_ids, dtype=torch.long).unsqueeze(0) # add the dim for batch
+    # trans the gene expression to tensor
+    expr_values_tensor = torch.tensor(test_spot.gene_exp, dtype=torch.float).unsqueeze(0)
+    
+    print(encoded_genes_tensor)
+    print(expr_values_tensor)
+    
+    encoded_vectors = model(encoded_genes_tensor, expr_values_tensor)
+    print("Encoded vectors:", encoded_vectors)
+    print("with shape:", encoded_vectors.shape)
             
 if __name__ == '__main__':
     
@@ -78,7 +112,9 @@ if __name__ == '__main__':
     # test_spot_process_2()
     # test_spot_process_3()
     # test_spot_process_4()
-    test_spot_process_5()
+    # test_spot_process_5()
+    
+    test_embedding_gene_exp()
     
     
     

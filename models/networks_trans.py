@@ -28,49 +28,27 @@ class GeneBasicTransformer(nn.Module):
                                           num_encoder_layers=n_layers,
                                           num_decoder_layers=0,
                                           dropout=dropout)
-        self.output_layer = nn.Linear(hidden_dim, 1)
+        # self.output_layer = nn.Linear(hidden_dim, 1)
 
     def forward(self, gene_ids, expr_values):
         gene_embeds = self.gene_embedding(gene_ids)
         expr_embeds = self.expr_embedding(expr_values.unsqueeze(-1))
+        print(gene_embeds.shape, expr_embeds.shape)
         
         # Combine embeddings by concatenation and then process
         x = torch.cat([gene_embeds, expr_embeds], dim=-1)
         x = self.combine_layer(x)
         # Transformer without positional encoding
         x = self.transformer.encoder(x)
+        print(x.shape)
         # Some pooling or aggregation if necessary
         x = torch.mean(x, dim=1)
         
-        return self.output_layer(x)
+        return x
     
     
     
     
     
-''' --------- some unit test functions --------- '''
-
-def _test_embedding_gene_exp():
-    '''
-    '''
-    all_gene_names = ['gene1', 'gene2', 'gene3', 'gene4', 'gene5', 'gene6', 'gene7', 'gene8']
-    tokenizer = GeneNameHashTokenizer(all_gene_names)
-    vocab_size = len(tokenizer.vocab)  # size of vocab
-    
-    # initialize the Transformer
-    model = GeneBasicTransformer(vocab_size, hidden_dim=512, n_heads=4, n_layers=3, dropout=0.3)
-    
-    sample_gene_names = ['gene1', 'gene4', 'gene6', 'gene2']
-    sample_expr_values = [0.5, 1.2, 0.3, 0.7]
-    
-    # encode gene names
-    encoded_genes = tokenizer.encode(sample_gene_names)
-    encoded_genes_tensor = torch.tensor(encoded_genes, dtype=torch.long).unsqueeze(0) # add the dim for batch
-    # trans the gene expression to tensor
-    expr_values_tensor = torch.tensor(sample_expr_values, dtype=torch.float).unsqueeze(0)
-    
-    encoded_vectors = model(encoded_genes_tensor, expr_values_tensor)
-    print("Encoded vectors:", encoded_vectors)
-
 if __name__ == '__main__':
     pass
