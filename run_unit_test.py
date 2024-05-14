@@ -11,8 +11,11 @@ from torch.utils.data.dataloader import DataLoader
 
 from models import functions, datasets
 from models.datasets import SpotDataset
+from models.networks_img import ContextDualViT, \
+    ContextShareViT, ContextEfficientViT
 from models.networks_trans import GeneBasicTransformer
 from support import env_st_pre
+from support.env import _todevice
 from trans import spot_tools
 from trans.spot_process import _h_analyze_ext_genes_for_all_barcodes, \
     load_file_names, get_coordinates_from_csv, get_barcode_from_coord_csv, \
@@ -112,13 +115,53 @@ def test_embedding_gene_exp():
 def test_spot_dataloader():
     '''
     '''
-    spot_pkl_dir = env_st_pre.ENV_ST_HE_PRE.ST_HE_SPOT_PKL_FOLDER
+    ENV_task = env_st_pre.ENV_ST_HE_PRE
+    
+    spot_pkl_dir = ENV_task.ST_HE_SPOT_PKL_FOLDER
     dataset = SpotDataset(root_dir=spot_pkl_dir, transform=functions.get_data_arg_transform())
-    data_loader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=4, collate_fn=datasets.my_collate_fn)
+    data_loader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=4, collate_fn=datasets.my_collate_fn)
+    
+    gene_vocab_name = 'gene_tokenizer.pkl'
+    tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    vocab_size = len(tokenizer.vocab)
+    gene_net = GeneBasicTransformer(vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.3)
+    # tissue_net = ContextShareViT(hidden_dim=128)
+    tissue_net = ContextEfficientViT()
+    gene_net.eval()
+    tissue_net.eval()
+    
+    gene_net = _todevice(gene_net)
+    tissue_net = _todevice(tissue_net)
+    
+    max_batches = 10
+    current_batch = 0
     
     for batch in data_loader:
-        print(batch['img_small'].shape)  # Example access to the small image batch
-        print(batch['gene_exp'].shape)  # Example access to the gene expression data
+        if current_batch >= max_batches:
+            break
+        
+        # print(batch['img_small'].shape)  # Example access to the small image batch
+        # print(batch['gene_exp'].shape)  # Example access to the gene expression data
+        img_small = batch['img_small']
+        img_large = batch['img_large']
+        gene_ids = batch['gene_ids']
+        gene_exp = batch['gene_exp']
+        mask = batch['mask']
+        
+        img_small = _todevice(img_small)
+        img_large = _todevice(img_large)
+        gene_ids = _todevice(gene_ids)
+        gene_exp = _todevice(gene_exp)
+        mask = _todevice(mask)
+        
+        en_gene = gene_net(gene_ids, gene_exp, mask)
+        en_img = tissue_net(img_small, img_large)
+        
+        print(en_gene.shape, en_img.shape)
+        print(en_gene.detach().cpu())
+        print(en_img.detach().cpu())
+        
+        current_batch += 1
             
 if __name__ == '__main__':
     

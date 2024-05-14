@@ -8,6 +8,7 @@ import torch
 from torch.utils.data import Dataset, DataLoader
 from torchvision import transforms
 from torch.utils.data.dataloader import default_collate
+from torch.nn.utils.rnn import pad_sequence
 
 from PIL import Image
 import pickle
@@ -57,16 +58,29 @@ class SpotDataset(Dataset):
 def my_collate_fn(batch):
     '''
     '''
+    
+    # handle deal with the batch data
     batch_img_small = torch.stack([item['img_small'] for item in batch])
     batch_img_large = torch.stack([item['img_large'] for item in batch])
-    batch_gene_ids = torch.stack([item['gene_ids'] for item in batch])
-    batch_gene_exp = torch.stack([item['gene_exp'] for item in batch])
+    
+    # pad_sequence for gene sequence with different length, return the padding sequence and original length
+    gene_ids = [item['gene_ids'].clone().detach() for item in batch]
+    gene_exp = [item['gene_exp'].clone().detach() for item in batch]
+    
+    batch_gene_ids = pad_sequence(gene_ids, batch_first=True, padding_value=0)
+    batch_gene_exp = pad_sequence(gene_exp, batch_first=True, padding_value=0.0)
+    
+    # create mask
+    batch_mask = torch.zeros_like(batch_gene_ids, dtype=torch.bool)
+    for i, length in enumerate([len(ids) for ids in gene_ids]):
+        batch_mask[i, length:] = True
 
     return {
         'img_small': batch_img_small,
         'img_large': batch_img_large,
         'gene_ids': batch_gene_ids,
-        'gene_exp': batch_gene_exp
+        'gene_exp': batch_gene_exp,
+        'mask': batch_mask  # return mask
     }
 
 if __name__ == '__main__':

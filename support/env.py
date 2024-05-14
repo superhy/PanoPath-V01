@@ -11,7 +11,7 @@ from support.parames import parames_basic
 
 
 def _todevice(torch_item):
-    devices = torch.device('cuda')
+    devices = torch.device('cuda:0')
     devices_cpu = torch.device('cpu')
     devices_mps = torch.device('mps')
     
@@ -19,16 +19,16 @@ def _todevice(torch_item):
     
     if OS_NAME == 'Windows':
         if torch.cuda.is_available() == True:
-            torch_item.to(devices)
+            return torch_item.to(devices)
         else:
-            torch_item.to(devices_cpu)
+            return torch_item.to(devices_cpu)
     elif OS_NAME == 'Darwin': # mac
         if torch.backends.mps.is_available() == True:
-            torch_item.to(devices_mps)
+            return torch_item.to(devices_mps)
         else:
-            torch_item.to(devices_cpu)
+            return torch_item.to(devices_cpu)
     else:
-        torch_item.to(devices)
+        return torch_item.to(devices)
         
 ENV = parames_basic(
         project_name='PanoPath-V01',
