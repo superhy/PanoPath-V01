@@ -33,6 +33,8 @@ def _todevice(torch_item):
 ENV = parames_basic(
         project_name='PanoPath-V01',
         scale_factor=16,
+        tile_size=256,
+        transform_resize=224,
         pil_image_file_format='.png'
     )
 

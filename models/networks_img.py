@@ -26,7 +26,11 @@ class ContextShareViTransformer(nn.Module):
         self.vit_shared = ViTModel(config_img)
         
         # using a layer to combine the features of small and large images
-        self.encoder = nn.Linear(2 * config_img.hidden_size, hidden_dim)
+        self.encoder = nn.Sequential(
+            nn.Linear(2 * config_img.hidden_size, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU()
+        )
 
     def forward(self, img_small, img_large):
         outputs_small = self.vit_shared(pixel_values=img_small).last_hidden_state[:, 0]
@@ -56,7 +60,11 @@ class ContextDualViTransformer(nn.Module):
         self.vit_large = ViTModel(config_img)
         
         # using a layer to combine the features of small and large images
-        self.encoder = nn.Linear(2 * config_img.hidden_size, hidden_dim)
+        self.encoder = nn.Sequential(
+            nn.Linear(2 * config_img.hidden_size, hidden_dim),
+            nn.BatchNorm1d(hidden_dim),
+            nn.ReLU()
+        )
 
     def forward(self, img_small, img_large):
         outputs_small = self.vit_small(pixel_values=img_small).last_hidden_state[:, 0]

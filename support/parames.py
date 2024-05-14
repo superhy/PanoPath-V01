@@ -10,6 +10,8 @@ class parames_basic():
     def __init__(self, 
                  project_name,
                  scale_factor=16,
+                 tile_size=256,
+                 transform_resize=224,
                  pil_image_file_format='.png'):
         """
         Args:
@@ -41,8 +43,8 @@ class parames_basic():
             
         if self.OS_NAME == 'Windows':
             if os.environ.get('USERNAME') == 'laengs2304':
-                # self.DATA_DIR = 'D:/PanoPath-Project' # local
-                self.DATA_DIR = 'E:/PanoPath-Project' # SSD
+                self.DATA_DIR = 'D:/PanoPath-Project' # local
+                # self.DATA_DIR = 'E:/PanoPath-Project' # SSD
             else:
                 self.DATA_DIR = 'E:/PanoPath-Project' # STAT
                 # self.DATA_DIR = 'F:/PanoPath-Project' # SSD
@@ -54,6 +56,9 @@ class parames_basic():
 #         self.SLIDE_TYPE = slide_type
         self.SCALE_FACTOR = scale_factor
         self.PIL_IMAGE_FILE_FORMAT = pil_image_file_format
+        self.TILE_H_SIZE = tile_size
+        self.TILE_W_SIZE = self.TILE_H_SIZE
+        self.TRANSFORMS_RESIZE = transform_resize
             
 class parame_st_task(parames_basic):
     

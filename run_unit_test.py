@@ -7,7 +7,10 @@ Created on 16 Apr 2024
 import os
 
 import torch
+from torch.utils.data.dataloader import DataLoader
 
+from models import functions, datasets
+from models.datasets import SpotDataset
 from models.networks_trans import GeneBasicTransformer
 from support import env_st_pre
 from trans import spot_tools
@@ -77,6 +80,7 @@ def test_spot_process_5():
     ENV_task = env_st_pre.ENV_ST_HE_PRE
     _h_count_spot_num(ENV_task)
     
+    
 def test_embedding_gene_exp():
     '''
     '''
@@ -104,6 +108,17 @@ def test_embedding_gene_exp():
     encoded_vectors = model(encoded_genes_tensor, expr_values_tensor)
     print("Encoded vectors:", encoded_vectors)
     print("with shape:", encoded_vectors.shape)
+    
+def test_spot_dataloader():
+    '''
+    '''
+    spot_pkl_dir = env_st_pre.ENV_ST_HE_PRE.ST_HE_SPOT_PKL_FOLDER
+    dataset = SpotDataset(root_dir=spot_pkl_dir, transform=functions.get_data_arg_transform())
+    data_loader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=4, collate_fn=datasets.my_collate_fn)
+    
+    for batch in data_loader:
+        print(batch['img_small'].shape)  # Example access to the small image batch
+        print(batch['gene_exp'].shape)  # Example access to the gene expression data
             
 if __name__ == '__main__':
     
@@ -114,7 +129,9 @@ if __name__ == '__main__':
     # test_spot_process_4()
     # test_spot_process_5()
     
-    test_embedding_gene_exp()
+    # test_embedding_gene_exp()
+    
+    test_spot_dataloader()
     
     
     
