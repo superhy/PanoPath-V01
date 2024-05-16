@@ -16,10 +16,10 @@ class GeneBasicTransformer(nn.Module):
     The basic gene expression embedding transformer
     """
     
-    def __init__(self, vocab_size, hidden_dim, n_heads, n_layers, dropout):
+    def __init__(self, vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.2):
         super(GeneBasicTransformer, self).__init__()
         
-        self.network_name = 'GeneBasicT'
+        self.network_name = f'GeneBasicT-h{n_heads}-d{n_layers}'
         
         self.gene_embedding = nn.Embedding(vocab_size, hidden_dim)
         self.expr_embedding = nn.Linear(1, hidden_dim)
@@ -65,7 +65,8 @@ class GeneReformer(nn.Module):
                  model_name = 'google/reformer-crime-and-punishment'):
         super(GeneBasicTransformer, self).__init__()
         
-        self.network_name = f'GeneReformer_{model_name}'
+        model_str = model_name.replace('/', '_')
+        self.network_name = f'GeneReformer_{model_str}'
         
         self.gene_embedding = nn.Embedding(vocab_size, hidden_dim, padding_idx=0)  # Assuming padding idx is 0
         self.expr_embedding = nn.Linear(1, hidden_dim)

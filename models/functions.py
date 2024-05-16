@@ -1,86 +1,21 @@
 '''
 @author: Yang Hu
 '''
+''' ------------------ optimizers for all algorithms (models) ------------------ '''
+
 import csv
 import os
 
-from sklearn import metrics
-from torch import nn, optim
-import torch
-from torch.nn.functional import softmax
-from torch.nn.modules.loss import CrossEntropyLoss, L1Loss, NLLLoss, \
-    TripletMarginLoss
+from torch import optim
 from torch.optim import lr_scheduler
 from torch.utils.data.dataloader import DataLoader
 from torchvision import transforms
 
+from models.networks import clip_loss
 import numpy as np
+from support import env
 from support.env import ENV
 from support.tools import Time
-
-
-#######################################################################
-#------------- a list of self-designed losses (criterion) ------------#
-#######################################################################
-class CombinationLoss(nn.Module):
-    
-    def __init__(self, nb_losses, loss_lambda: list=[0.5, 0.5]):
-        super(CombinationLoss, self).__init__()
-        self.weights = []
-        self.left_lambda = 1.0
-        if loss_lambda != None:
-            i = 0
-            for _lambda in loss_lambda:
-                self.weights.append(_lambda)
-                self.left_lambda -= _lambda
-                i += 1
-            if i < nb_losses:
-                self.weights.extend(list(max(self.left_lambda, 0) / (nb_losses - i) for j in range(nb_losses - i)))
-#             para = nn.Parameter(torch.tensor(0.5), requires_grad=True)
-#             para = torch.clamp(para, min=0.0, max=1.0)
-#             self.weights.append(para)
-#             self.weights.append(1.0 - para)
-        else:
-            for i in range(nb_losses):
-                self.weights.append(1.0)
-                
-    def forward(self, _losses):
-        '''
-        Args:
-            _losses: multiple computed losses
-        '''
-        comb_loss = self.weights[0] * _losses[0]
-        for i in range(len(_losses) - 1):
-            comb_loss = comb_loss + self.weights[i + 1] * _losses[i + 1]
-            
-        return comb_loss
-
-
-'''
-------------- call various loss functions ------------
-'''
-
-def l1_loss():
-    return L1Loss().cuda()
-
-def nll_loss():
-    return NLLLoss().cuda()
-
-def cel_loss():
-    return CrossEntropyLoss().cuda()
-
-def weighted_cel_loss(weight=0.5):
-    w = torch.Tensor([1 - weight, weight])
-    loss = CrossEntropyLoss(w).cuda()
-    return loss
-
-def triplet_margin_loss():
-    return TripletMarginLoss(margin=1.0, p=2).cuda()
-
-def combination_loss(n_losses, loss_lambda=[0.5, 0.5]):
-    return CombinationLoss(n_losses, loss_lambda).cuda()
-
-''' ------------------ optimizers for all algorithms (models) ------------------ '''
 
 
 def optimizer_sgd_basic(net, lr=1e-2):
@@ -107,15 +42,6 @@ def optimizer_adam_pretrained(net, lr=1e-4, wd=1e-4):
                             {'params': net.fc.parameters(), 'lr': lr * 1}],
                             lr=lr, weight_decay=wd)
     return optimizer
-
-''' ------------------ dataloader ------------------ '''
-
-def get_data_loader(dataset, batch_size, num_workers=4, sf=False, p_mem=False):
-    data_loader = DataLoader(dataset, batch_size=batch_size, 
-                             num_workers=num_workers, 
-                             shuffle=sf, 
-                             pin_memory=p_mem)
-    return data_loader
 
 
 ''' 
@@ -200,6 +126,35 @@ def get_data_arg_redu_size_transform():
         normalize
         ])
     return transform_augs
+
+
+''' ------------- training function for CLIP ------------ '''
+
+def train_clip(model, dataloader, epochs, optimizer):
+    '''
+    '''
+    
+    for epoch in range(epochs):
+        model.train()
+        total_loss = 0.0
+        for batch in dataloader:
+            img_small = env._todevice(batch['img_small'])
+            img_large = env._todevice(batch['img_large'])
+            gene_ids = env._todevice(batch['gene_ids'])
+            gene_exp = env._todevice(batch['gene_exp'])
+            mask = env._todevice(batch['mask'])
+            
+            optimizer.zero_grad()
+            
+            image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
+            loss = clip_loss(image_features, gene_features, model.temperature)
+            loss.backward()
+            optimizer.step()
+            
+            total_loss += loss.item()
+        
+        avg_loss = total_loss / len(dataloader)
+        print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
 
 
 

@@ -11,8 +11,8 @@ from torch.utils.data.dataloader import DataLoader
 
 from models import functions, datasets
 from models.datasets import SpotDataset
-from models.networks_img import ContextDualViT, \
-    ContextShareViT, ContextEfficientViT
+from models.networks import ContextDualViT, \
+    ContextShareViT, ContextSmallViT
 from models.networks_trans import GeneBasicTransformer
 from support import env_st_pre
 from support.env import _todevice
@@ -119,14 +119,16 @@ def test_spot_dataloader():
     
     spot_pkl_dir = ENV_task.ST_HE_SPOT_PKL_FOLDER
     dataset = SpotDataset(root_dir=spot_pkl_dir, transform=functions.get_data_arg_transform())
-    data_loader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=4, collate_fn=datasets.my_collate_fn)
+    data_loader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=4, 
+                             collate_fn=datasets.my_collate_fn,
+                             pin_memory=True)
     
     gene_vocab_name = 'gene_tokenizer.pkl'
     tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
     vocab_size = len(tokenizer.vocab)
-    gene_net = GeneBasicTransformer(vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.3)
+    gene_net = GeneBasicTransformer(vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.2)
     # tissue_net = ContextShareViT(hidden_dim=128)
-    tissue_net = ContextEfficientViT()
+    tissue_net = ContextSmallViT()
     gene_net.eval()
     tissue_net.eval()
     
