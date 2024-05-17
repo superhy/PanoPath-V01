@@ -13,7 +13,7 @@ from models import functions, datasets
 from models.datasets import SpotDataset
 from models.networks import ContextDualViT, \
     ContextShareViT, ContextViT
-from models.networks_trans import GeneBasicTransformer
+from models.networks_trans import GeneTransformer, BlockGeneTransformer
 from support import env_st_pre
 from support.env import _todevice
 from trans import spot_tools
@@ -93,7 +93,7 @@ def test_embedding_gene_exp():
     vocab_size = len(tokenizer.vocab)  # size of vocab
     
     # initialize the Transformer
-    model = GeneBasicTransformer(vocab_size, hidden_dim=512, n_heads=4, n_layers=3, dropout=0.3)
+    model = GeneTransformer(vocab_size, hidden_dim=512, n_heads=4, n_layers=3, dropout=0.3)
     
     test_spot_obj_name = os.path.join('CytAssist_11mm_FFPE_Human_Colorectal_Cancer', 
                                       'CytAssist_11mm_FFPE_Human_Colorectal_Cancer-AACAATCCGAGTGGAC-1.pkl')
@@ -126,9 +126,12 @@ def test_spot_dataloader():
     gene_vocab_name = 'gene_tokenizer.pkl'
     tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
     vocab_size = len(tokenizer.vocab)
-    gene_net = GeneBasicTransformer(vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.2)
+    # gene_net = GeneTransformer(vocab_size, n_heads=4, n_layers=3, dropout=0.2, 
+    #                                 hidden_dim=64)
+    gene_net = BlockGeneTransformer(vocab_size, n_heads=4, n_layers=3, dropout=0.2, 
+                                    hidden_dim=64)
     # tissue_net = ContextShareViT(hidden_dim=128)
-    tissue_net = ContextViT()
+    tissue_net = ContextViT(patch_size=16, heads=4, depth=3, mlp_dim=128, hidden_dim=64)
     gene_net.eval()
     tissue_net.eval()
     

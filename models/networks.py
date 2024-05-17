@@ -41,17 +41,6 @@ class ContextViT(nn.Module):
             heads=heads,
             mlp_dim=mlp_dim,
         )
-        # self.vit_shared = ViT(
-        #     image_size=image_size,
-        #     patch_size=patch_size,
-        #     num_classes=0,  # This should be set to 0 if we only need features
-        #     dim=hidden_dim,
-        #     depth=depth,
-        #     heads=heads,
-        #     mlp_dim=mlp_dim,
-        #     dropout=0.2,
-        #     emb_dropout=0.2
-        # )
         self.with_wrapper = False
         
         # self.vit_shared.mlp_head = nn.Identity()

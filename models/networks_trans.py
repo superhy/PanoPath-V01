@@ -5,21 +5,18 @@ Created on 12 Apr 2024
 '''
 
 import torch
-from transformers.models.reformer.configuration_reformer import ReformerConfig
-from transformers.models.reformer.modeling_reformer import ReformerModel
 
 import torch.nn as nn
 
-
-class GeneBasicTransformer(nn.Module):
+class GeneTransformer(nn.Module):
     """
     The basic gene expression embedding transformer
     """
     
-    def __init__(self, vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.2):
-        super(GeneBasicTransformer, self).__init__()
+    def __init__(self, vocab_size, n_heads=4, n_layers=3, dropout=0.2, hidden_dim=128):
+        super(GeneTransformer, self).__init__()
         
-        self.network_name = f'G_BasicT-h{n_heads}-d{n_layers}'
+        self.network_name = f'G_Tr-h{n_heads}-d{n_layers}'
         
         self.gene_embedding = nn.Embedding(vocab_size, hidden_dim)
         self.expr_embedding = nn.Linear(1, hidden_dim)
@@ -56,72 +53,27 @@ class GeneBasicTransformer(nn.Module):
         
         return out
     
-    
-''' ReFormer from HuggingFace '''
-
-def pad_to_multiple_of_chunk_length(x, mask, chunk_length=64):
+class BlockGeneTransformer(nn.Module):
     """
-    Pads the input tensor to ensure its sequence length is a multiple of the chunk length.
-    
-    Args:
-    x (torch.Tensor): The input tensor of shape (batch_size, sequence_length, hidden_dim).
-    mask (torch.Tensor): The attention mask tensor of shape (batch_size, sequence_length).
-    chunk_length (int): The chunk length, default is 64.
-    
-    Returns:
-    padded_x (torch.Tensor): The padded input tensor.
-    padded_mask (torch.Tensor): The padded mask tensor.
+    Gene expression embedding transformer with block-wise processing.
     """
-    seq_len = x.size(1)
-    pad_len = (chunk_length - (seq_len % chunk_length)) % chunk_length
     
-    if pad_len > 0:
-        pad_tensor = torch.zeros((x.size(0), pad_len, x.size(2)), dtype=x.dtype, device=x.device)
-        x = torch.cat([x, pad_tensor], dim=1)
+    def __init__(self, vocab_size, n_heads=4, n_layers=3, dropout=0.2, block_size=512, hidden_dim=128):
+        super(BlockGeneTransformer, self).__init__()
         
-        pad_mask = torch.ones((mask.size(0), pad_len), dtype=mask.dtype, device=mask.device)
-        mask = torch.cat([mask, pad_mask], dim=1)
-    
-    return x, mask
-
-class GeneReformer(nn.Module):
-    """
-    The basic gene expression embedding transformer integrating a Reformer model
-    """
-    def __init__(self, vocab_size, 
-                 hidden_dim, num_attention_heads=4, 
-                 num_transformer_layers=3, 
-                 dropout=0.2,
-                 model_name='google/reformer-crime-and-punishment'):
-        super(GeneReformer, self).__init__()
+        self.network_name = f'G_Block_Tr-h{n_heads}-d{n_layers}'
+        self.block_size = block_size
         
-        model_str = model_name.replace('/', '_')
-        self.network_name = f'GeneReformer_{model_str}'
-        
-        self.gene_embedding = nn.Embedding(vocab_size, hidden_dim, padding_idx=0)  # Assuming padding idx is 0
+        self.gene_embedding = nn.Embedding(vocab_size, hidden_dim)
         self.expr_embedding = nn.Linear(1, hidden_dim)
-        self.combine_layer = nn.Linear(2 * hidden_dim, hidden_dim)
+        self.combine_layer = nn.Linear(2 * hidden_dim, hidden_dim)  # Combine layer
         
-        # Load a pre-trained Reformer configured for not using positional embeddings
-        config = ReformerConfig.from_pretrained(
-            model_name,
-            attention_head_size=hidden_dim // num_attention_heads,
-            num_attention_heads=num_attention_heads,
-            num_hidden_layers=num_transformer_layers,
-            feed_forward_size=hidden_dim * 2,
-            hidden_dropout_prob=dropout,
-            attention_dropout_prob=dropout,
-            is_decoder=False,
-            max_position_embeddings=16384  # Set this to a higher value if needed
+        self.transformer_block = nn.Transformer(
+            d_model=hidden_dim, nhead=n_heads, 
+            num_encoder_layers=n_layers, num_decoder_layers=0, 
+            dropout=dropout, batch_first=True
         )
         
-        self.reformer = ReformerModel(config)
-        
-        # Ensure position embeddings are set to None
-        self.reformer.embeddings.position_embeddings = None # Disable position embeddings
-        
-        # Additional layer to project the output to the desired dimension
-        self.output_layer = nn.Linear(hidden_dim, hidden_dim)
         self.norm = nn.Sequential(
             nn.LayerNorm(hidden_dim),
             nn.ReLU()
@@ -131,24 +83,32 @@ class GeneReformer(nn.Module):
         gene_embeds = self.gene_embedding(gene_ids)
         expr_embeds = self.expr_embedding(expr_values.unsqueeze(-1))
         
+        # Combine embeddings by concatenation and then process
         x = torch.cat([gene_embeds, expr_embeds], dim=-1)
         x = self.combine_layer(x)
-
-        # Ensure the sequence length is a multiple of chunk length (64)
-        x, mask = pad_to_multiple_of_chunk_length(x, mask, chunk_length=64)
-
-        # Process through Reformer with mask support
-        reformer_output = self.reformer(inputs_embeds=x, attention_mask=~mask).last_hidden_state
         
-        # Apply batch normalization and ReLU activation after reformer processing
-        reformer_output = reformer_output.mean(dim=1)  # Aggregate across sequence dimension
-        output = self.output_layer(reformer_output)
-        output = self.norm(output)
+        # Divide x and mask into blocks
+        num_blocks = (x.size(1) + self.block_size - 1) // self.block_size
+        x_blocks = x.chunk(num_blocks, dim=1)
+        mask_blocks = mask.chunk(num_blocks, dim=1)
         
-        return output
-    
-class my_ReformerEmbeddings(ReformerEmbeddings)
-    
+        # Process each block separately
+        block_outputs = []
+        for i in range(num_blocks):
+            x_block = x_blocks[i]
+            mask_block = mask_blocks[i]
+            # Transformer without positional encoding
+            block_output = self.transformer_block.encoder(x_block, src_key_padding_mask=mask_block) # apply the mask to transformer
+            block_outputs.append(block_output)
+        
+        # Concatenate the block outputs
+        x = torch.cat(block_outputs, dim=1)
+        
+        # Some pooling or aggregation if necessary
+        x = torch.mean(x, dim=1)  # masked part is not included in mean
+        out = self.norm(x)
+        
+        return out
     
     
 if __name__ == '__main__':
