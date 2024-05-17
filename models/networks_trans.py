@@ -66,7 +66,7 @@ class GeneReformer(nn.Module):
                  num_transformer_layers=3, 
                  dropout=0.2,
                  model_name = 'google/reformer-crime-and-punishment'):
-        super(GeneBasicTransformer, self).__init__()
+        super(GeneReformer, self).__init__()
         
         model_str = model_name.replace('/', '_')
         self.network_name = f'GeneReformer_{model_str}'
@@ -85,7 +85,7 @@ class GeneReformer(nn.Module):
             hidden_dropout_prob=dropout,
             attention_dropout_prob=dropout,
             is_decoder=False,
-            axial_pos_shape=None,  # Disable any axial positional encodings
+            axial_pos_shape=(64, 64),  # Define but disable any axial positional encodings
             use_axial_pos_emb=False  # Ensure that no positional embeddings are used
         )
         self.reformer = ReformerModel(config)
