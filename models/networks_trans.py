@@ -56,6 +56,33 @@ class GeneBasicTransformer(nn.Module):
         
         return out
     
+    
+''' ReFormer from HuggingFace '''
+
+def pad_to_multiple_of_chunk_length(x, mask, chunk_length=64):
+    """
+    Pads the input tensor to ensure its sequence length is a multiple of the chunk length.
+    
+    Args:
+    x (torch.Tensor): The input tensor of shape (batch_size, sequence_length, hidden_dim).
+    mask (torch.Tensor): The attention mask tensor of shape (batch_size, sequence_length).
+    chunk_length (int): The chunk length, default is 64.
+    
+    Returns:
+    padded_x (torch.Tensor): The padded input tensor.
+    padded_mask (torch.Tensor): The padded mask tensor.
+    """
+    seq_len = x.size(1)
+    pad_len = (chunk_length - (seq_len % chunk_length)) % chunk_length
+    
+    if pad_len > 0:
+        pad_tensor = torch.zeros((x.size(0), pad_len, x.size(2)), dtype=x.dtype, device=x.device)
+        x = torch.cat([x, pad_tensor], dim=1)
+        
+        pad_mask = torch.ones((mask.size(0), pad_len), dtype=mask.dtype, device=mask.device)
+        mask = torch.cat([mask, pad_mask], dim=1)
+    
+    return x, mask
 
 class GeneReformer(nn.Module):
     """
@@ -65,7 +92,7 @@ class GeneReformer(nn.Module):
                  hidden_dim, num_attention_heads=4, 
                  num_transformer_layers=3, 
                  dropout=0.2,
-                 model_name = 'google/reformer-crime-and-punishment'):
+                 model_name='google/reformer-crime-and-punishment'):
         super(GeneReformer, self).__init__()
         
         model_str = model_name.replace('/', '_')
@@ -85,10 +112,13 @@ class GeneReformer(nn.Module):
             hidden_dropout_prob=dropout,
             attention_dropout_prob=dropout,
             is_decoder=False,
-            axial_pos_shape=(64, 64),  # Define but disable any axial positional encodings
-            use_axial_pos_emb=False  # Ensure that no positional embeddings are used
+            max_position_embeddings=16384  # Set this to a higher value if needed
         )
+        
         self.reformer = ReformerModel(config)
+        
+        # Ensure position embeddings are set to None
+        self.reformer.embeddings.position_embeddings = None # Disable position embeddings
         
         # Additional layer to project the output to the desired dimension
         self.output_layer = nn.Linear(hidden_dim, hidden_dim)
@@ -97,15 +127,18 @@ class GeneReformer(nn.Module):
             nn.ReLU()
         )
 
-    def forward(self, gene_ids, expr_values):
+    def forward(self, gene_ids, expr_values, mask):
         gene_embeds = self.gene_embedding(gene_ids)
         expr_embeds = self.expr_embedding(expr_values.unsqueeze(-1))
         
         x = torch.cat([gene_embeds, expr_embeds], dim=-1)
         x = self.combine_layer(x)
 
-        # Process through Reformer, assume batch_first = True in configuration
-        reformer_output = self.reformer(inputs_embeds=x).last_hidden_state
+        # Ensure the sequence length is a multiple of chunk length (64)
+        x, mask = pad_to_multiple_of_chunk_length(x, mask, chunk_length=64)
+
+        # Process through Reformer with mask support
+        reformer_output = self.reformer(inputs_embeds=x, attention_mask=~mask).last_hidden_state
         
         # Apply batch normalization and ReLU activation after reformer processing
         reformer_output = reformer_output.mean(dim=1)  # Aggregate across sequence dimension
@@ -113,6 +146,8 @@ class GeneReformer(nn.Module):
         output = self.norm(output)
         
         return output
+    
+class my_ReformerEmbeddings(ReformerEmbeddings)
     
     
     

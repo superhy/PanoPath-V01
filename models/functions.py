@@ -183,7 +183,7 @@ def train_clip_multi_gpu(model, dataloader, epochs, optimizer):
             
             optimizer.zero_grad()
             image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
-            loss = clip_loss(image_features, gene_features, model.module.temperature)
+            loss = clip_loss(image_features, gene_features, model.temperature)
             accelerator.backward(loss)
             optimizer.step()
             total_loss += loss.item()

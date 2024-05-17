@@ -54,7 +54,8 @@ class ContextViT(nn.Module):
         # )
         self.with_wrapper = False
         
-        self.vit_shared.mlp_head = nn.Identity()
+        # self.vit_shared.mlp_head = nn.Identity()
+        self.vit_shared.linear_head = nn.Identity()
 
         # Using a layer to combine the features of small and large images
         self.encoder = nn.Sequential(
