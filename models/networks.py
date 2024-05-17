@@ -209,6 +209,8 @@ def triplet_margin_loss():
 
 def combination_loss(n_losses, loss_lambda=[0.5, 0.5]):
     return CombinationLoss(n_losses, loss_lambda).cuda()
+
+
     
 ''' ----------- CLIP model ---------- '''
    
