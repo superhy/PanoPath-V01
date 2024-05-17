@@ -19,7 +19,7 @@ class GeneBasicTransformer(nn.Module):
     def __init__(self, vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.2):
         super(GeneBasicTransformer, self).__init__()
         
-        self.network_name = f'GeneBasicT-h{n_heads}-d{n_layers}'
+        self.network_name = f'G_BasicT-h{n_heads}-d{n_layers}'
         
         self.gene_embedding = nn.Embedding(vocab_size, hidden_dim)
         self.expr_embedding = nn.Linear(1, hidden_dim)
@@ -32,7 +32,7 @@ class GeneBasicTransformer(nn.Module):
         # self.output_layer = nn.Linear(hidden_dim, 1)
         
         self.norm = nn.Sequential(
-            nn.BatchNorm1d(hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU()
         )
 
@@ -61,7 +61,10 @@ class GeneReformer(nn.Module):
     """
     The basic gene expression embedding transformer integrating a Reformer model
     """
-    def __init__(self, vocab_size, hidden_dim, num_attention_heads, num_transformer_layers, dropout,
+    def __init__(self, vocab_size, 
+                 hidden_dim, num_attention_heads=4, 
+                 num_transformer_layers=3, 
+                 dropout=0.2,
                  model_name = 'google/reformer-crime-and-punishment'):
         super(GeneBasicTransformer, self).__init__()
         
@@ -90,7 +93,7 @@ class GeneReformer(nn.Module):
         # Additional layer to project the output to the desired dimension
         self.output_layer = nn.Linear(hidden_dim, hidden_dim)
         self.norm = nn.Sequential(
-            nn.BatchNorm1d(hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU()
         )
 

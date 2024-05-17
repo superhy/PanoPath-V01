@@ -12,7 +12,7 @@ from torch.utils.data.dataloader import DataLoader
 from models import functions, datasets
 from models.datasets import SpotDataset
 from models.networks import ContextDualViT, \
-    ContextShareViT, ContextSmallViT
+    ContextShareViT, ContextViT
 from models.networks_trans import GeneBasicTransformer
 from support import env_st_pre
 from support.env import _todevice
@@ -128,7 +128,7 @@ def test_spot_dataloader():
     vocab_size = len(tokenizer.vocab)
     gene_net = GeneBasicTransformer(vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.2)
     # tissue_net = ContextShareViT(hidden_dim=128)
-    tissue_net = ContextSmallViT()
+    tissue_net = ContextViT()
     gene_net.eval()
     tissue_net.eval()
     

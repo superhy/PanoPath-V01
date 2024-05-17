@@ -7,8 +7,8 @@ import torch
 from torch.utils.data.dataloader import DataLoader
 
 from models import functions, datasets
-from models.networks import CLIPModel, ContextSmallViT
-from models.networks_trans import GeneBasicTransformer
+from models.networks import CLIPModel, ContextViT
+from models.networks_trans import GeneBasicTransformer, GeneReformer
 from support import env
 from trans.spot_process import load_pyobject_from_pkl
 
@@ -55,10 +55,17 @@ def _run_clip_training_spot_test(ENV_task):
     tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
     vocab_size = len(tokenizer.vocab)
     
-    img_encoder = ContextSmallViT(patch_size=32, heads=4, depth=3, mlp_dim=128, hidden_dim=64)
-    gene_encoder = GeneBasicTransformer(vocab_size=vocab_size, hidden_dim=64, n_heads=4, n_layers=3, dropout=0.2)
+    img_encoder = ContextViT(patch_size=16, heads=4, depth=3, mlp_dim=128, hidden_dim=64)
+    # gene_encoder = GeneBasicTransformer(vocab_size=vocab_size, hidden_dim=64, 
+    #                                     n_heads=4, n_layers=3, dropout=0.2)
+    gene_encoder = GeneReformer(vocab_size, hidden_dim=64, 
+                                num_attention_heads=4, 
+                                num_transformer_layers=3, 
+                                dropout=0.2)
     
     clip_training_spot(ENV_task, img_encoder, gene_encoder, nb_epochs=3, multi_gpu=True)
 
 if __name__ == '__main__':
     pass
+
+

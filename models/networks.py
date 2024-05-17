@@ -6,34 +6,33 @@ Created on 14 May 2024
 
 
 import torch
+from torch.nn.modules.loss import CrossEntropyLoss, L1Loss, NLLLoss, \
+    TripletMarginLoss
 from transformers import ViTModel, ViTConfig
 from vit_pytorch.extractor import Extractor
 from vit_pytorch.recorder import Recorder
+from vit_pytorch.simple_vit import SimpleViT
 from vit_pytorch.vit import ViT
 
 import torch.nn as nn
-
-from torch.nn.modules.loss import CrossEntropyLoss, L1Loss, NLLLoss, \
-    TripletMarginLoss
-
 
 """
 This file include networks for modelling images and cross-modalities
 """
 
-class ContextSmallViT(nn.Module):
+class ContextViT(nn.Module):
     """
     Vision Transformer using vit-pytorch for tissue image analysis with specified output dimension.
     Small ViT based on vit-pytorch is without pre-training
     """
     
     def __init__(self, image_size=224, patch_size=16, heads=4, depth=3, mlp_dim=256, hidden_dim=128):
-        super(ContextSmallViT, self).__init__()
+        super(ContextViT, self).__init__()
         
-        self.network_name = f'CtxSmallViT{patch_size}-{image_size}_h{heads}_d{depth}'
+        self.network_name = f'CtxI_ViT{patch_size}-{image_size}_h{heads}_d{depth}'
 
         # Define the shared ViT model without a classification head
-        self.vit_shared = ViT(
+        self.vit_shared = SimpleViT(
             image_size=image_size,
             patch_size=patch_size,
             num_classes=0,  # This should be set to 0 if we only need features
@@ -41,9 +40,18 @@ class ContextSmallViT(nn.Module):
             depth=depth,
             heads=heads,
             mlp_dim=mlp_dim,
-            dropout=0.2,
-            emb_dropout=0.2
         )
+        # self.vit_shared = ViT(
+        #     image_size=image_size,
+        #     patch_size=patch_size,
+        #     num_classes=0,  # This should be set to 0 if we only need features
+        #     dim=hidden_dim,
+        #     depth=depth,
+        #     heads=heads,
+        #     mlp_dim=mlp_dim,
+        #     dropout=0.2,
+        #     emb_dropout=0.2
+        # )
         self.with_wrapper = False
         
         self.vit_shared.mlp_head = nn.Identity()
@@ -51,7 +59,7 @@ class ContextSmallViT(nn.Module):
         # Using a layer to combine the features of small and large images
         self.encoder = nn.Sequential(
             nn.Linear(2 * hidden_dim, hidden_dim),  # Using hidden_dim now for the combination
-            nn.BatchNorm1d(hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU()
         )
         
@@ -89,7 +97,7 @@ class ContextShareViT(nn.Module):
     def __init__(self, hidden_dim=128, model_name='WinKawaks/vit-tiny-patch16-224'):
         super(ContextShareViT, self).__init__()
         
-        self.network_name = f'CtxShareViT_{model_name}'
+        self.network_name = f'CtxI_ViT_{model_name}'
         
         # load the pre-trained ViT from HuggingFace
         config_img = ViTConfig.from_pretrained(model_name)
@@ -122,7 +130,7 @@ class ContextDualViT(nn.Module):
     def __init__(self, hidden_dim=128, model_name='WinKawaks/vit-tiny-patch16-224'):
         super(ContextDualViT, self).__init__()
         
-        self.network_name = 'ContextDualViT'
+        self.network_name = f'CtxI_DuViT_{model_name}'
         
         # load the pre-trained ViT from HuggingFace
         config_img = ViTConfig.from_pretrained(model_name)
@@ -221,6 +229,9 @@ class CLIPModel(nn.Module):
     
     def __init__(self, image_encoder, gene_encoder):
         super(CLIPModel, self).__init__()
+        
+        self.network_name = 'CLIP'
+        
         self.image_encoder = image_encoder
         self.gene_encoder = gene_encoder
         # self.temperature = nn.Parameter(torch.ones([]) * 0.07)
