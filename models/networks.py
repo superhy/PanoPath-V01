@@ -223,7 +223,8 @@ class CLIPModel(nn.Module):
         super(CLIPModel, self).__init__()
         self.image_encoder = image_encoder
         self.gene_encoder = gene_encoder
-        self.temperature = nn.Parameter(torch.ones([]) * 0.07)
+        # self.temperature = nn.Parameter(torch.ones([]) * 0.07)
+        self.temperature = nn.Parameter(torch.tensor(0.07))
         
     def forward(self, img_small, img_large, gene_ids, gene_exp, mask):
         image_en = self.image_encoder(img_small, img_large)
@@ -236,6 +237,8 @@ def clip_loss(image_features, gene_features, temperature):
     '''
     
     batch_size = image_features.shape[0]
+    
+    # print(image_features.shape, gene_features.shape)
     
     # Normalize the features
     image_features = image_features / image_features.norm(dim=1, keepdim=True)

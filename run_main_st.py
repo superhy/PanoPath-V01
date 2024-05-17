@@ -21,9 +21,9 @@ task_str = '-' + '-'.join([str(lbl) for lbl in task_ids])
 
 if __name__ == '__main__':
     
-    log_name = 'pre_log-{}-{}.log'.format(task_str,
-                                          str(tools.Time().start)[:13].replace(' ', '-'))
-    sys.stdout = Logger(os.path.join(ENV_task.ST_HE_LOG_DIR, log_name))
+    # log_name = 'pre_log-{}-{}.log'.format(task_str,
+    #                                       str(tools.Time().start)[:13].replace(' ', '-'))
+    # sys.stdout = Logger(os.path.join(ENV_task.ST_HE_LOG_DIR, log_name))
     
     if 0.1 in task_ids:
         '''

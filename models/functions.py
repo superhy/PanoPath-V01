@@ -6,6 +6,7 @@
 import csv
 import os
 
+from accelerate.accelerator import Accelerator
 from torch import optim
 from torch.optim import lr_scheduler
 from torch.utils.data.dataloader import DataLoader
@@ -135,11 +136,14 @@ def train_clip(model, dataloader, epochs, optimizer):
     '''
     '''
     
+    model = env._todevice(model)
+    
     for epoch in range(epochs):
         model.train()
         total_loss = 0.0
         
         run_time = Time()
+        # for batch in dataloader:
         for batch in tqdm(dataloader, desc=f"Epoch {epoch}:"):
             img_small = env._todevice(batch['img_small'])
             img_large = env._todevice(batch['img_large'])
@@ -158,6 +162,33 @@ def train_clip(model, dataloader, epochs, optimizer):
         
         avg_loss = total_loss / len(dataloader)
         # print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, running time: {str(run_time.elapsed())[:-5]}")
+        print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
+        
+def train_clip_multi_gpu(model, dataloader, epochs, optimizer):
+    '''
+    '''
+    
+    accelerator = Accelerator()
+    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
+    
+    for epoch in range(epochs):
+        model.train()
+        total_loss = 0.0
+        for batch in tqdm(dataloader, desc=f"Epoch {epoch+1}/{epochs}"):
+            img_small = batch['img_small']
+            img_large = batch['img_large']
+            gene_ids = batch['gene_ids']
+            gene_exp = batch['gene_exp']
+            mask = batch['mask']
+            
+            optimizer.zero_grad()
+            image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
+            loss = clip_loss(image_features, gene_features, model.module.temperature)
+            accelerator.backward(loss)
+            optimizer.step()
+            total_loss += loss.item()
+        
+        avg_loss = total_loss / len(dataloader)
         print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
 
 
