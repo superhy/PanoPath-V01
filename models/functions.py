@@ -10,6 +10,7 @@ from torch import optim
 from torch.optim import lr_scheduler
 from torch.utils.data.dataloader import DataLoader
 from torchvision import transforms
+from tqdm import tqdm
 
 from models.networks import clip_loss
 import numpy as np
@@ -137,7 +138,9 @@ def train_clip(model, dataloader, epochs, optimizer):
     for epoch in range(epochs):
         model.train()
         total_loss = 0.0
-        for batch in dataloader:
+        
+        run_time = Time()
+        for batch in tqdm(dataloader, desc=f"Epoch {epoch}:"):
             img_small = env._todevice(batch['img_small'])
             img_large = env._todevice(batch['img_large'])
             gene_ids = env._todevice(batch['gene_ids'])
@@ -154,6 +157,7 @@ def train_clip(model, dataloader, epochs, optimizer):
             total_loss += loss.item()
         
         avg_loss = total_loss / len(dataloader)
+        # print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, running time: {str(run_time.elapsed())[:-5]}")
         print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
 
 

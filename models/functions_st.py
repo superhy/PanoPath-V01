@@ -46,6 +46,8 @@ def _run_clip_training_spot_test(ENV_task):
     
     img_encoder = ContextSmallViT(hidden_dim=128)
     gene_encoder = GeneBasicTransformer(vocab_size=vocab_size, hidden_dim=128, n_heads=4, n_layers=3, dropout=0.3)
+    
+    clip_training_spot(ENV_task, img_encoder, gene_encoder, nb_epochs=5)
 
 if __name__ == '__main__':
     pass
