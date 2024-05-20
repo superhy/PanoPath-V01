@@ -5,6 +5,7 @@ Created on 16 Apr 2024
 '''
 
 import os
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 import torch
 from torch.utils.data.dataloader import DataLoader
@@ -119,7 +120,7 @@ def test_spot_dataloader():
     
     spot_pkl_dir = ENV_task.ST_HE_SPOT_PKL_FOLDER
     dataset = SpotDataset(root_dir=spot_pkl_dir, transform=functions.get_data_arg_transform())
-    data_loader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=4, 
+    data_loader = DataLoader(dataset, batch_size=4, shuffle=False, num_workers=4, 
                              collate_fn=datasets.my_collate_fn,
                              pin_memory=True)
     

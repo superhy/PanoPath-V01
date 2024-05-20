@@ -28,6 +28,11 @@ class GeneTransformer(nn.Module):
                                           batch_first=True)
         # self.output_layer = nn.Linear(hidden_dim, 1)
         
+        self.norm = nn.Sequential(
+            nn.LayerNorm(hidden_dim),
+            nn.ReLU()
+        )
+        
     def forward(self, gene_ids, expr_values, mask):
         gene_embeds = self.gene_embedding(gene_ids)
         expr_embeds = self.expr_embedding(expr_values.unsqueeze(-1))
@@ -43,7 +48,8 @@ class GeneTransformer(nn.Module):
         # print(x.shape)
         
         # Some pooling or aggregation if necessary
-        out = torch.mean(x, dim=1) # masked part is not included in mean
+        x = torch.mean(x, dim=1) # masked part is not included in mean
+        out = self.norm(x)
         
         return out
     
@@ -68,6 +74,11 @@ class BlockGeneTransformer(nn.Module):
             dropout=dropout, batch_first=True
         )
         
+        self.norm = nn.Sequential(
+            nn.LayerNorm(hidden_dim),
+            nn.ReLU()
+        )
+        
     def check_tensor(self, tensor, name):
         if torch.isnan(tensor).any():
             print(f"NaN detected in {name}")
@@ -89,25 +100,40 @@ class BlockGeneTransformer(nn.Module):
         
         # Process each block separately
         block_outputs = []
+        valid_lengths = torch.zeros(x.size(0), device=x.device)
+        
         for i in range(num_blocks):
             x_block = x_blocks[i]
             mask_block = mask_blocks[i]
             
+            # Check if the mask for the entire block is all True for any sample
+            mask_block_all_true = mask_block.all(dim=1, keepdim=True)
+            
+            if mask_block_all_true.any():
+                x_block = x_block.masked_fill(mask_block_all_true.unsqueeze(-1), 0)
+
             # Transformer without positional encoding
-            if not mask_block.any().item():
-                block_output = self.transformer_block.encoder(x_block)
-            else:
-                block_output = self.transformer_block.encoder(x_block, 
-                                                              src_key_padding_mask=mask_block) # apply the mask to transformer
-            self.check_tensor(block_output, f"block_output_{i}")
+            block_output = self.transformer_block.encoder(x_block, src_key_padding_mask=mask_block)
+            
+            # Replace NaNs with zeros
+            block_output = torch.nan_to_num(block_output, nan=0.0)
             block_outputs.append(block_output)
+            
+            # Update valid lengths
+            # valid_lengths += (~mask_block_all_true).float().sum(dim=1)
+            valid_lengths += (~mask_block).float().sum(dim=1)
+            # print(valid_lengths)
         
+        # valid_lengths = valid_lengths * self.block_size
+        # print(valid_lengths)
         # Concatenate the block outputs
         x = torch.cat(block_outputs, dim=1)
+        x = self.norm(x)
         
-        # Some pooling or aggregation if necessary
-        out = torch.mean(x, dim=1)  # masked part is not included in mean
-        # self.check_tensor(x, "mean_pooled_output")
+        # Compute the mean, taking into account the valid lengths
+        # print(valid_lengths)
+        valid_lengths = valid_lengths.unsqueeze(1)
+        out = torch.sum(x, dim=1) / valid_lengths
         
         return out
     

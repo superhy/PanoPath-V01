@@ -204,6 +204,7 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
         
         check_points = [int(epochs * ms) for ms in milestons]
         if epoch + 1 in check_points or epoch + 1 >= epochs:
+            store_path = store_path.replace('.pth', f'[{epoch + 1}].pth')
             store_path = networks.store_net(model, store_path, optimizer)
             print(f'record checkpoint at: {store_path}')
             

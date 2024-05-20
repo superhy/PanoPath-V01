@@ -36,7 +36,7 @@ def store_net(trained_net, store_path, optimizer, init_obj_dict={}, with_time=Tr
     init_obj_dict.update({'state_dict': trained_net.state_dict(),
                           'optimizer': optimizer.state_dict()})
     
-    store_path = store_path.replace('.', f'{str_time}.')
+    store_path = store_path.replace('.pth', f'{str_time}.pth')
     torch.save(init_obj_dict, store_path)
     
     return store_path
@@ -90,6 +90,7 @@ class ContextViT(nn.Module):
         # Using a layer to combine the features of small and large images
         self.encoder = nn.Sequential(
             nn.Linear(2 * hidden_dim, hidden_dim),  # Using hidden_dim now for the combination
+            nn.LayerNorm(hidden_dim),
             nn.ReLU()
         )
         
@@ -139,7 +140,7 @@ class ContextShareViT(nn.Module):
         # using a layer to combine the features of small and large images
         self.encoder = nn.Sequential(
             nn.Linear(2 * config_img.hidden_size, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU()
         )
 
@@ -174,7 +175,7 @@ class ContextDualViT(nn.Module):
         # using a layer to combine the features of small and large images
         self.encoder = nn.Sequential(
             nn.Linear(2 * config_img.hidden_size, hidden_dim),
-            nn.BatchNorm1d(hidden_dim),
+            nn.LayerNorm(hidden_dim),
             nn.ReLU()
         )
 
@@ -280,7 +281,7 @@ def clip_loss(image_features, gene_features, temperature):
     '''
     
     batch_size = image_features.shape[0]
-    print('Features: ', image_features, gene_features)
+    # print('Features: ', image_features, gene_features)
     
     # Normalize the features with epsilon to avoid division by zero
     epsilon = 1e-8

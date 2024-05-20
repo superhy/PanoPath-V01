@@ -14,8 +14,8 @@ from models.functions_st import _run_clip_training_spot_test,\
     _run_clip_training_spot_ivit_gblockt
 
 
-task_ids = [0.1]
-# task_ids = [1.0]
+# task_ids = [0.1]
+task_ids = [1.0]
 
 ENV_task = env_st_pre.ENV_ST_HE_PRE
 
