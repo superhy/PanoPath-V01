@@ -5,6 +5,8 @@ Created on 14 May 2024
 '''
 
 
+import os
+
 import torch
 from torch.nn.modules.loss import CrossEntropyLoss, L1Loss, NLLLoss, \
     TripletMarginLoss
@@ -14,7 +16,46 @@ from vit_pytorch.recorder import Recorder
 from vit_pytorch.simple_vit import SimpleViT
 from vit_pytorch.vit import ViT
 
+from support.tools import Time
 import torch.nn as nn
+
+
+def store_net(trained_net, store_path, optimizer, init_obj_dict={}, with_time=True):
+    """
+    store the trained models
+    
+    Args:
+        ENV_task: a object which packaged all parames in specific ENV_TASK
+        trained_net:
+        algorithm_name:
+        optimizer:
+        init_obj_dict:
+    """
+    
+    str_time = Time().date if with_time else ''
+    init_obj_dict.update({'state_dict': trained_net.state_dict(),
+                          'optimizer': optimizer.state_dict()})
+    
+    store_path = store_path.replace('.', f'{str_time}.')
+    torch.save(init_obj_dict, store_path)
+    
+    return store_path
+
+def reload_net(model_net, model_filepath):
+    """
+    reload network models only for testing
+    
+    Args:
+        model_net: an empty network need to reload
+        model_filepath:
+        
+    Return: only the 'state_dict' of models
+    """
+    checkpoint = torch.load(model_filepath)
+    model_net.load_state_dict(checkpoint['state_dict'], False)
+    print('load model from: {}'.format(model_filepath))
+    
+    return model_net, checkpoint
 
 """
 This file include networks for modelling images and cross-modalities
@@ -26,10 +67,10 @@ class ContextViT(nn.Module):
     Small ViT based on vit-pytorch is without pre-training
     """
     
-    def __init__(self, image_size=224, patch_size=16, heads=4, depth=3, mlp_dim=256, hidden_dim=128):
+    def __init__(self, image_size=224, patch_size=16, heads=4, depth=3, hidden_dim=128):
         super(ContextViT, self).__init__()
         
-        self.network_name = f'CtxI_ViT{patch_size}-{image_size}_h{heads}_d{depth}'
+        self.network_name = f'CtxI-ViT{patch_size}-{image_size}-h{heads}_d{depth}'
 
         # Define the shared ViT model without a classification head
         self.vit_shared = SimpleViT(
@@ -39,7 +80,7 @@ class ContextViT(nn.Module):
             dim=hidden_dim,
             depth=depth,
             heads=heads,
-            mlp_dim=mlp_dim,
+            mlp_dim=hidden_dim * 2,
         )
         self.with_wrapper = False
         
@@ -49,7 +90,6 @@ class ContextViT(nn.Module):
         # Using a layer to combine the features of small and large images
         self.encoder = nn.Sequential(
             nn.Linear(2 * hidden_dim, hidden_dim),  # Using hidden_dim now for the combination
-            nn.LayerNorm(hidden_dim),
             nn.ReLU()
         )
         
@@ -87,7 +127,8 @@ class ContextShareViT(nn.Module):
     def __init__(self, hidden_dim=128, model_name='WinKawaks/vit-tiny-patch16-224'):
         super(ContextShareViT, self).__init__()
         
-        self.network_name = f'CtxI_ViT_{model_name}'
+        model_str = model_name.replace('/', '-')
+        self.network_name = f'CtxI-ViT-{model_str}'
         
         # load the pre-trained ViT from HuggingFace
         config_img = ViTConfig.from_pretrained(model_name)
@@ -120,7 +161,8 @@ class ContextDualViT(nn.Module):
     def __init__(self, hidden_dim=128, model_name='WinKawaks/vit-tiny-patch16-224'):
         super(ContextDualViT, self).__init__()
         
-        self.network_name = f'CtxI_DuViT_{model_name}'
+        model_str = model_name.replace('/', '-')
+        self.network_name = f'CtxI-DuViT-{model_str}'
         
         # load the pre-trained ViT from HuggingFace
         config_img = ViTConfig.from_pretrained(model_name)
@@ -238,15 +280,19 @@ def clip_loss(image_features, gene_features, temperature):
     '''
     
     batch_size = image_features.shape[0]
+    print('Features: ', image_features, gene_features)
     
-    # print(image_features.shape, gene_features.shape)
+    # Normalize the features with epsilon to avoid division by zero
+    epsilon = 1e-8
+    image_features = image_features / (image_features.norm(dim=1, keepdim=True) + epsilon)
+    gene_features = gene_features / (gene_features.norm(dim=1, keepdim=True) + epsilon)
     
-    # Normalize the features
-    image_features = image_features / image_features.norm(dim=1, keepdim=True)
-    gene_features = gene_features / gene_features.norm(dim=1, keepdim=True)
+    # print("Normalized image features:", image_features)
+    # print("Normalized gene features:", gene_features)
     
     # Compute logits
     logits = torch.matmul(image_features, gene_features.t()) / temperature
+    # print("Logits:", logits)
     
     # Create labels
     labels = torch.arange(batch_size).to(image_features.device)

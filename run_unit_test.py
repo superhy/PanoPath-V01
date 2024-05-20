@@ -119,7 +119,7 @@ def test_spot_dataloader():
     
     spot_pkl_dir = ENV_task.ST_HE_SPOT_PKL_FOLDER
     dataset = SpotDataset(root_dir=spot_pkl_dir, transform=functions.get_data_arg_transform())
-    data_loader = DataLoader(dataset, batch_size=2, shuffle=True, num_workers=4, 
+    data_loader = DataLoader(dataset, batch_size=4, shuffle=True, num_workers=4, 
                              collate_fn=datasets.my_collate_fn,
                              pin_memory=True)
     
@@ -131,14 +131,14 @@ def test_spot_dataloader():
     gene_net = BlockGeneTransformer(vocab_size, n_heads=4, n_layers=3, dropout=0.2, 
                                     hidden_dim=64)
     # tissue_net = ContextShareViT(hidden_dim=128)
-    tissue_net = ContextViT(patch_size=16, heads=4, depth=3, mlp_dim=128, hidden_dim=64)
+    tissue_net = ContextViT(patch_size=16, heads=4, depth=3, hidden_dim=64)
     gene_net.eval()
     tissue_net.eval()
     
     gene_net = _todevice(gene_net)
     tissue_net = _todevice(tissue_net)
     
-    max_batches = 10
+    max_batches = 1
     current_batch = 0
     
     for batch in data_loader:

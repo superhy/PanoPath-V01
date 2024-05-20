@@ -74,6 +74,7 @@ def my_collate_fn(batch):
     batch_mask = torch.zeros_like(batch_gene_ids, dtype=torch.bool)
     for i, length in enumerate([len(ids) for ids in gene_ids]):
         batch_mask[i, length:] = True
+    # print(batch_mask)
 
     return {
         'img_small': batch_img_small,

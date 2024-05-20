@@ -16,7 +16,7 @@ class GeneTransformer(nn.Module):
     def __init__(self, vocab_size, n_heads=4, n_layers=3, dropout=0.2, hidden_dim=128):
         super(GeneTransformer, self).__init__()
         
-        self.network_name = f'G_Tr-h{n_heads}-d{n_layers}'
+        self.network_name = f'G-Tr-h{n_heads}-d{n_layers}'
         
         self.gene_embedding = nn.Embedding(vocab_size, hidden_dim)
         self.expr_embedding = nn.Linear(1, hidden_dim)
@@ -28,11 +28,6 @@ class GeneTransformer(nn.Module):
                                           batch_first=True)
         # self.output_layer = nn.Linear(hidden_dim, 1)
         
-        self.norm = nn.Sequential(
-            nn.LayerNorm(hidden_dim),
-            nn.ReLU()
-        )
-
     def forward(self, gene_ids, expr_values, mask):
         gene_embeds = self.gene_embedding(gene_ids)
         expr_embeds = self.expr_embedding(expr_values.unsqueeze(-1))
@@ -48,8 +43,7 @@ class GeneTransformer(nn.Module):
         # print(x.shape)
         
         # Some pooling or aggregation if necessary
-        x = torch.mean(x, dim=1) # masked part is not included in mean
-        out = self.norm(x)
+        out = torch.mean(x, dim=1) # masked part is not included in mean
         
         return out
     
@@ -61,7 +55,7 @@ class BlockGeneTransformer(nn.Module):
     def __init__(self, vocab_size, n_heads=4, n_layers=3, dropout=0.2, block_size=512, hidden_dim=128):
         super(BlockGeneTransformer, self).__init__()
         
-        self.network_name = f'G_Block_Tr-h{n_heads}-d{n_layers}'
+        self.network_name = f'G-Block_Tr-h{n_heads}-d{n_layers}'
         self.block_size = block_size
         
         self.gene_embedding = nn.Embedding(vocab_size, hidden_dim)
@@ -74,11 +68,12 @@ class BlockGeneTransformer(nn.Module):
             dropout=dropout, batch_first=True
         )
         
-        self.norm = nn.Sequential(
-            nn.LayerNorm(hidden_dim),
-            nn.ReLU()
-        )
-
+    def check_tensor(self, tensor, name):
+        if torch.isnan(tensor).any():
+            print(f"NaN detected in {name}")
+        if torch.isinf(tensor).any():
+            print(f"Inf detected in {name}")
+    
     def forward(self, gene_ids, expr_values, mask):
         gene_embeds = self.gene_embedding(gene_ids)
         expr_embeds = self.expr_embedding(expr_values.unsqueeze(-1))
@@ -97,16 +92,22 @@ class BlockGeneTransformer(nn.Module):
         for i in range(num_blocks):
             x_block = x_blocks[i]
             mask_block = mask_blocks[i]
+            
             # Transformer without positional encoding
-            block_output = self.transformer_block.encoder(x_block, src_key_padding_mask=mask_block) # apply the mask to transformer
+            if not mask_block.any().item():
+                block_output = self.transformer_block.encoder(x_block)
+            else:
+                block_output = self.transformer_block.encoder(x_block, 
+                                                              src_key_padding_mask=mask_block) # apply the mask to transformer
+            self.check_tensor(block_output, f"block_output_{i}")
             block_outputs.append(block_output)
         
         # Concatenate the block outputs
         x = torch.cat(block_outputs, dim=1)
         
         # Some pooling or aggregation if necessary
-        x = torch.mean(x, dim=1)  # masked part is not included in mean
-        out = self.norm(x)
+        out = torch.mean(x, dim=1)  # masked part is not included in mean
+        # self.check_tensor(x, "mean_pooled_output")
         
         return out
     

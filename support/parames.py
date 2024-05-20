@@ -39,7 +39,8 @@ class parames_basic():
         elif self.OS_NAME == 'Darwin':
             self.PROJECT_DIR = os.path.join('/Users/superhy/Documents/workspace', self.PROJECT_NAME)
         else:
-            self.PROJECT_DIR = os.path.join('/home/cqj236/workspace', self.PROJECT_NAME)
+            self.PROJECT_DIR = os.path.join('/exafs1/well/rittscher/users/lec468/workspace',
+                                            self.PROJECT_NAME)
             
         if self.OS_NAME == 'Windows':
             if os.environ.get('USERNAME') == 'laengs2304':
@@ -51,7 +52,7 @@ class parames_basic():
         elif self.OS_NAME == 'Darwin':
             self.DATA_DIR = '/Volumes/Extreme SSD/PanoPath-Project'
         else:
-            self.DATA_DIR = '#TODO:' # on Linux servers
+            self.DATA_DIR = '/exafs1/well/rittscher/users/lec468/PanoPath-Project' # on Linux servers
             
 #         self.SLIDE_TYPE = slide_type
         self.SCALE_FACTOR = scale_factor
@@ -68,6 +69,20 @@ class parame_st_task(parames_basic):
                  pil_image_file_format,
                  tissue_stain,
                  nb_top_genes,
+                 gene_n_heads=4,
+                 gene_n_layers=3,
+                 gene_dropout=0.2,
+                 gene_hidden_dim=128,
+                 block_gene_size=512,
+                 img_vit_patch_size=16,
+                 img_n_heads=4,
+                 img_n_layers=3,
+                 img_hidden_dim=128,
+                 clip_lr=1e-4,
+                 clip_batch_size=4,
+                 clip_n_workers=8,
+                 clip_n_epochs=1000,
+                 clip_milestore=[0.2, 0.4, 0.6, 0.8, 1.0]
                  ):
         
         super(parame_st_task, self).__init__(project_name, 
@@ -86,6 +101,7 @@ class parame_st_task(parames_basic):
         self.ST_HE_VISIUM_FOLDER = os.path.join(self.ST_HE_DIR, 'visium')
         self.ST_HE_SPOT_IMG_FOLDER = os.path.join(self.ST_HE_DIR, 'spot_img')
         self.ST_HE_SPOT_PKL_FOLDER = os.path.join(self.ST_HE_DIR, 'spot_pkl')
+        self.ST_HE_MODEL_DIR = os.path.join(self.ST_HE_DIR, 'models')
         
         self.ST_IHC_TISSUE_FOLDER = os.path.join(self.ST_IHC_DIR, 'tissue')
         self.ST_IHC_TRANS_FOLDER = os.path.join(self.ST_IHC_DIR, 'trans')
@@ -93,6 +109,23 @@ class parame_st_task(parames_basic):
         
         self.TISSUE_STAIN = tissue_stain
         self.NB_TOP_GENES = nb_top_genes
+        
+        self.GENE_N_HEADS = gene_n_heads
+        self.GENE_N_LAYERS = gene_n_layers
+        self.GENE_DROPOUT = gene_dropout
+        self.GENE_HIDDEN_DIM = gene_hidden_dim
+        self.BLOCK_GENE_SIZE = block_gene_size
+        self.IMG_VIT_PATCH_SIZE = img_vit_patch_size
+        self.IMG_N_HEADS = img_n_heads
+        self.IMG_N_LAYERS = img_n_layers
+        self.IMG_HIDDEN_DIM = img_hidden_dim
+        
+        self.CLIP_LR = clip_lr
+        self.CLIP_BACTH_SIZE = clip_batch_size 
+        self.CLIP_N_WORKERS = clip_n_workers
+        self.CLIP_N_EPOCHS = clip_n_epochs
+        self.CLIP_MILESTORE = clip_milestore
+        
 
 if __name__ == '__main__':
     pass
