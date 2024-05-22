@@ -28,10 +28,13 @@ def optimizer_sgd_basic(net, lr=1e-2):
     return optimizer, scheduler
 
 
-def optimizer_adam_basic(net, lr=1e-4, wd=1e-4):
+def optimizer_adam_basic(net, lr=1e-3, wd=1e-2):
     optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=wd)
     return optimizer
 
+def optimizer_adam_w(net, lr=1e-3, wd=1e-2):
+    optimizer = optim.Adam(net.parameters(), lr=lr, weight_decay=wd)
+    return optimizer
 
 def optimizer_rmsprop_basic(net, lr=1e-5):
     optimizer = optim.RMSprop(net.parameters(), lr=lr, weight_decay=1e-8, momentum=0.9)
@@ -159,6 +162,7 @@ def train_clip(model, dataloader, epochs, optimizer, store_path,
             image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
             loss = clip_loss(image_features, gene_features, model.temperature)
             loss.backward()
+            # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
             optimizer.step()
             
             total_loss += loss.item()
@@ -195,6 +199,7 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
             image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
             loss = clip_loss(image_features, gene_features, model.module.temperature)
             loss.backward()
+            # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
             optimizer.step()
             total_loss += loss.item()
         

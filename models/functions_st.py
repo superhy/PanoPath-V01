@@ -39,7 +39,7 @@ def clip_training_spot(ENV_task, img_encoder, gene_encoder,
     clip_model = CLIPModel(img_encoder, gene_encoder)
     
     # prepare the optimizer
-    optimizer = functions.optimizer_adam_basic(clip_model)
+    optimizer = functions.optimizer_adam_basic(clip_model, lr=ENV_task.CLIP_LR)
     
     store_path = os.path.join(model_dir, 
                               f'CLIP_{img_encoder.network_name}_{img_encoder.network_name}.pth')
@@ -101,7 +101,8 @@ def _run_clip_training_spot_ivit_gblockt(ENV_task):
     
     clip_training_spot(ENV_task, img_encoder, gene_encoder, 
                        nb_epochs=ENV_task.CLIP_N_EPOCHS, 
-                       multi_gpu=True)
+                       multi_gpu=True,
+                       milestons=ENV_task.CLIP_MILESTORE)
 
 if __name__ == '__main__':
     pass

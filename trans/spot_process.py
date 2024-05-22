@@ -250,10 +250,15 @@ def gen_spot_single_slide(ENV_task, cohort_n, file_names_dict, cohort_metas_dict
     create and store the spot objects in 
     '''
     
-    barcode_gene_dict, barcodes_1 = spot_tools.parse_st_h5_f0_topvar0(ENV_task,
-                                                                      trans_filename=file_names_dict['trans'],
-                                                                      gene_vocab=gene_vocab,
-                                                                      top_n=ENV_task.NB_TOP_GENES)
+    # barcode_gene_dict, barcodes_1 = spot_tools.parse_st_h5_f0_topvar0(ENV_task,
+    #                                                                   trans_filename=file_names_dict['trans'],
+    #                                                                   gene_vocab=gene_vocab,
+    #                                                                   top_n=ENV_task.NB_TOP_GENES)
+    barcode_gene_dict, barcodes_1 = spot_tools.parse_st_h5_topvar(ENV_task, 
+                                                                  trans_filename=file_names_dict['trans'], 
+                                                                  gene_vocab=gene_vocab, 
+                                                                  top_n=ENV_task.NB_TOP_GENES)
+    
     barcodes_2 = get_barcode_from_coord_csv(ENV_task, file_names_dict['coords'])
     set_1 = set(barcodes_1)
     set_2 = set(barcodes_2)

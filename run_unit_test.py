@@ -5,7 +5,6 @@ Created on 16 Apr 2024
 '''
 
 import os
-os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
 
 import torch
 from torch.utils.data.dataloader import DataLoader
@@ -23,6 +22,10 @@ from trans.spot_process import _h_analyze_ext_genes_for_all_barcodes, \
     _h_statistic_spot_pkl_gene_feature, _h_count_spot_num, \
     load_pyobject_from_pkl
 
+os.environ["KMP_DUPLICATE_LIB_OK"] = "TRUE"
+
+
+
 
 def test_spot_tools_1():
     '''
@@ -30,18 +33,22 @@ def test_spot_tools_1():
     '''
     ENV_task = env_st_pre.ENV_ST_HE_PRE
     trans_filename = 'DLPFC_151508_filtered_feature_bc_matrix.h5'
-    bc_gene_dict, bcs, genes = spot_tools.parse_st_h5_f0_topvar0(ENV_task, trans_filename)
-    print(f'number of barcodes: {len(bcs)}')
+    gene_vocab_name = 'gene_tokenizer.pkl'
+    tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    # barcode_gene_dict, barcodes = spot_tools.parse_st_h5_f0_topvar0(ENV_task, trans_filename, 
+    #                                                              gene_vocab=tokenizer.vocab)
+    barcode_gene_dict, barcodes = spot_tools.parse_st_h5_topvar(ENV_task, trans_filename, 
+                                                                gene_vocab=tokenizer.vocab)
+    print(f'number of barcodes: {len(barcodes)}')
     
     # print(bc_gene_dict[bcs[0]])
     # print(bc_gene_dict[bcs[1]])
     # print(bc_gene_dict[bcs[2]])
     
     for i in range(3):
-        gene_idxs = [idx for idx, _ in bc_gene_dict[bcs[i]] ]
-        gene_exp = [v for _, v in bc_gene_dict[bcs[i]] ]
-        print(genes[gene_idxs])
-        print(gene_exp)
+        gene_info = barcode_gene_dict[barcodes[i]]
+        for g_info in gene_info:
+            print(tokenizer.inverse_vocab[g_info[0]], g_info[1])
         
 def test_spot_process_1():
     '''
@@ -171,7 +178,7 @@ def test_spot_dataloader():
             
 if __name__ == '__main__':
     
-    # test_spot_tools_1()
+    test_spot_tools_1()
     # test_spot_process_1()
     # test_spot_process_2()
     # test_spot_process_3()
@@ -180,7 +187,7 @@ if __name__ == '__main__':
     
     # test_embedding_gene_exp()
     
-    test_spot_dataloader()
+    # test_spot_dataloader()
     
     
     

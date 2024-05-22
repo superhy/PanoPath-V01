@@ -111,18 +111,18 @@ def parse_st_h5_topvar(ENV_task, trans_filename, gene_vocab, top_n=1000):
     # Compute variance for each gene_idx and filter top N variable genes
     variances = np.array(matrix.power(2).mean(axis=1) - np.square(matrix.mean(axis=1))).flatten()
     top_genes_indices = np.argsort(variances)[-top_n:]
-    filtered_matrix = matrix[top_genes_indices, :]
+    # filtered_matrix = matrix[top_genes_indices, :]
     # top_var_gene_names = all_gene_names[top_genes_indices]  # Top variable gene_idx names
     
     # Convert the filtered sparse matrix to dense format for easier processing
-    dense_matrix = filtered_matrix.toarray().T
+    dense_matrix = matrix.toarray().T
     print(f'with filtered matrix shape as (nb_spots, nb_genes): {dense_matrix.shape}')
     print(f'barcodes: \n{barcodes}')
-    print(f'top variable gene_idx names number: \n{len(top_genes_indices)}')
+    print(f'top variable gene_idx names number: {len(top_genes_indices)}')
     
     # Creating a dictionary with barcodes as keys and list of (gene_name, value) tuples as values
     barcode_gene_dict = {}
-    for i, barcode in enumerate(barcodes):
+    for i, barcode in tqdm(enumerate(barcodes), total=len(barcodes), desc="Processing gene matrix"):
         gene_infos = [(gene_vocab[all_gene_names[gene_idx]], dense_matrix[i, gene_idx]) for gene_idx in top_genes_indices]
         barcode_gene_dict[barcode] = gene_infos
     gc.collect() # release the memory

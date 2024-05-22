@@ -58,7 +58,7 @@ class BlockGeneTransformer(nn.Module):
     Gene expression embedding transformer with block-wise processing.
     """
     
-    def __init__(self, vocab_size, n_heads=4, n_layers=3, dropout=0.2, block_size=512, hidden_dim=128):
+    def __init__(self, vocab_size, n_heads=4, n_layers=3, dropout=0.2, block_size=200, hidden_dim=128):
         super(BlockGeneTransformer, self).__init__()
         
         self.network_name = f'G-Block_Tr-h{n_heads}-d{n_layers}'
@@ -116,7 +116,7 @@ class BlockGeneTransformer(nn.Module):
             block_output = self.transformer_block.encoder(x_block, src_key_padding_mask=mask_block)
             
             # Replace NaNs with zeros
-            block_output = torch.nan_to_num(block_output, nan=0.0)
+            block_output = torch.nan_to_num(block_output, nan=1e-8)
             block_outputs.append(block_output)
             
             # Update valid lengths

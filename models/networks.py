@@ -284,9 +284,9 @@ def clip_loss(image_features, gene_features, temperature):
     # print('Features: ', image_features, gene_features)
     
     # Normalize the features with epsilon to avoid division by zero
-    epsilon = 1e-8
-    image_features = image_features / (image_features.norm(dim=1, keepdim=True) + epsilon)
-    gene_features = gene_features / (gene_features.norm(dim=1, keepdim=True) + epsilon)
+    # epsilon = 1e-8
+    image_features = image_features / image_features.norm(dim=1, keepdim=True)
+    gene_features = gene_features / gene_features.norm(dim=1, keepdim=True)
     
     # print("Normalized image features:", image_features)
     # print("Normalized gene features:", gene_features)
