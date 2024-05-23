@@ -1,0 +1,121 @@
+with filtered matrix shape as (nb_spots, nb_genes): (9080, 18085)
+barcodes: 
+['AACAATCCGAGTGGAC-1' 'AACAATGGAACCACAT-1' 'AACAATTATCTGCGCC-1' ...
+ 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\CytAssist_11mm_FFPE_Human_Colorectal_Cancer
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Colorectal_Cancer
+store 9080 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Colorectal_Cancer
+with filtered matrix shape as (nb_spots, nb_genes): (10878, 18085)
+barcodes: 
+['AACAATCCGAGTGGAC-1' 'AACAATGTGCTCCGAG-1' 'AACAATTATCTGCGCC-1' ...
+ 'TGTTGGTGCGCACGAG-1' 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\CytAssist_11mm_FFPE_Human_Glioblastoma
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Glioblastoma
+store 10878 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Glioblastoma
+with filtered matrix shape as (nb_spots, nb_genes): (5936, 18085)
+barcodes: 
+['AACAATGGAACCACAT-1' 'AACAATGTGCTCCGAG-1' 'AACACCAGCCTACTCG-1' ...
+ 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\CytAssist_11mm_FFPE_Human_Kidney
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Kidney
+store 5936 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Kidney
+with filtered matrix shape as (nb_spots, nb_genes): (6195, 18085)
+barcodes: 
+['AACAATCCGAGTGGAC-1' 'AACAATGGAACCACAT-1' 'AACACCAGCCTACTCG-1' ...
+ 'TGTTGGTGCGCTTCGC-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\CytAssist_11mm_FFPE_Human_Lung_Cancer
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Lung_Cancer
+store 6195 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Lung_Cancer
+with filtered matrix shape as (nb_spots, nb_genes): (4674, 18085)
+barcodes: 
+['AACAATGTGCTCCGAG-1' 'AACACCATTCGCATAC-1' 'AACACGTTGATACCGC-1' ...
+ 'TGTTGGTGCGCACGAG-1' 'TGTTGGTGCGGAATCA-1' 'TGTTGGTGGACTCAGG-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\CytAssist_11mm_FFPE_Human_Ovarian_Carcinoma
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Ovarian_Carcinoma
+store 4674 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_11mm_FFPE_Human_Ovarian_Carcinoma
+with filtered matrix shape as (nb_spots, nb_genes): (3858, 18085)
+barcodes: 
+['AACACGTGCATCGCAC-1' 'AACACTTGGCAAGGAA-1' 'AACAGGATTCATAGTT-1' ...
+ 'TGTTGGAAGCTCGGTA-1' 'TGTTGGATGGACTTCT-1' 'TGTTGGCCAGACCTAC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\CytAssist_FFPE_Human_Lung_Squamous_Cell_Carcinoma
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_FFPE_Human_Lung_Squamous_Cell_Carcinoma
+store 3858 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_FFPE_Human_Lung_Squamous_Cell_Carcinoma
+with filtered matrix shape as (nb_spots, nb_genes): (1657, 18085)
+barcodes: 
+['AACACTTGGCAAGGAA-1' 'AACAGGATTCATAGTT-1' 'AACATCTAATGACCGG-1' ...
+ 'TGTTGGAACCTTCCGC-1' 'TGTTGGATGGACTTCT-1' 'TGTTGGCCAGACCTAC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\CytAssist_Fresh_Frozen_Human_Breast_Cancer
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_Fresh_Frozen_Human_Breast_Cancer
+store 1657 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\CytAssist_Fresh_Frozen_Human_Breast_Cancer
+with filtered matrix shape as (nb_spots, nb_genes): (4226, 33538)
+barcodes: 
+['AAACAACGAATAGTTC-1' 'AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151507
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151507
+store 4226 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151507
+with filtered matrix shape as (nb_spots, nb_genes): (4384, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151508
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151508
+store 4383 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151508
+with filtered matrix shape as (nb_spots, nb_genes): (4789, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACAATCTACTAGCA-1' 'AAACACCAATAACTGC-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151509
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151509
+store 4787 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151509
+with filtered matrix shape as (nb_spots, nb_genes): (4634, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151510
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151510
+store 4634 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151510
+with filtered matrix shape as (nb_spots, nb_genes): (3661, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151669
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151669
+store 3661 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151669
+with filtered matrix shape as (nb_spots, nb_genes): (3498, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151670
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151670
+store 3493 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151670
+with filtered matrix shape as (nb_spots, nb_genes): (4110, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCCATACAACT-1' 'TTGTTTGTATTACACG-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151671
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151671
+store 4110 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151671
+with filtered matrix shape as (nb_spots, nb_genes): (4015, 33538)
+barcodes: 
+['AAACAAGTATCTCCCA-1' 'AAACACCAATAACTGC-1' 'AAACAGAGCGACTCCT-1' ...
+ 'TTGTTTCATTAGTCTA-1' 'TTGTTTCCATACAACT-1' 'TTGTTTGTGTAAATTC-1']
+top variable gene_idx names number: 1000
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_img\DLPFC_151672
+create new cohort folder at: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151672
+store 4013 spot pkl files in folder: D:/PanoPath-Project\st-he\spot_pkl\DLPFC_151672
+with filtered matrix shape as (nb_spots, nb_genes): (3639, 33538)

@@ -28,7 +28,7 @@ def clip_training_spot(ENV_task, img_encoder, gene_encoder,
     dataset = datasets.SpotDataset(root_dir=spot_pkl_dir, 
                                    transform=functions.get_data_arg_transform())
     dataloader = DataLoader(dataset, batch_size=ENV_task.CLIP_BACTH_SIZE, 
-                            shuffle=True, num_workers=ENV_task.CLIP_N_WORKERS, 
+                            shuffle=False, num_workers=ENV_task.CLIP_N_WORKERS, 
                             collate_fn=datasets.my_collate_fn,
                             pin_memory=True)
     

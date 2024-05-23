@@ -147,6 +147,7 @@ def train_clip(model, dataloader, epochs, optimizer, store_path,
     
     for epoch in range(epochs):
         total_loss = 0.0
+        dataloader.dataset.reset_shuffling()
         
         run_time = Time()
         for batch in dataloader:
@@ -185,6 +186,7 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
 
     for epoch in range(epochs):
         total_loss = 0.0
+        dataloader.dataset.reset_shuffling()
         
         run_time = Time()
         for batch in dataloader:
@@ -213,10 +215,11 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
             store_path = networks.store_net(model, store_path, optimizer)
             print(f'record checkpoint at: {store_path}')
             
+        
 def train_clip_multi_gpu(model, dataloader, epochs, optimizer, store_path,
                          milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
     '''
-    TODO: not work, need to check
+    TODO: not work on multi-GPU, need to check
     '''
     
     accelerator = Accelerator()
@@ -225,7 +228,11 @@ def train_clip_multi_gpu(model, dataloader, epochs, optimizer, store_path,
     
     for epoch in range(epochs):
         total_loss = 0.0
-        for batch in tqdm(dataloader, desc=f"MP Epoch {epoch+1}/{epochs}"):
+        dataloader.dataset.reset_shuffling()
+        
+        run_time = Time()
+        for batch in dataloader:
+        # for batch in tqdm(dataloader, desc=f"MP Epoch {epoch+1}/{epochs}"):
             img_small = batch['img_small']
             img_large = batch['img_large']
             gene_ids = batch['gene_ids']
@@ -240,7 +247,8 @@ def train_clip_multi_gpu(model, dataloader, epochs, optimizer, store_path,
             total_loss += loss.item()
         
         avg_loss = total_loss / len(dataloader)
-        print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
+        print(f"MP-T Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, running time: {str(run_time.elapsed())[:-5]}")
+        # print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
         
         check_points = [int(epochs * ms) for ms in milestons]
         if epoch + 1 in check_points or epoch + 1 >= epochs:

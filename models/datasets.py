@@ -10,11 +10,28 @@ from torchvision import transforms
 from torch.utils.data.dataloader import default_collate
 from torch.nn.utils.rnn import pad_sequence
 
+import random
 from PIL import Image
 import pickle
 import os
 from models import functions
 
+
+class CohortShuffler:
+    def __init__(self, root_dir):
+        self.root_dir = root_dir
+        self.cohort_dirs = [os.path.join(root_dir, d) for d in os.listdir(root_dir) if os.path.isdir(os.path.join(root_dir, d))]
+        self.reset()
+    
+    def reset(self):
+        # Shuffle the order of cohorts
+        random.shuffle(self.cohort_dirs)
+        # Shuffle the files within each cohort
+        self.cohort_files = []
+        for cohort_dir in self.cohort_dirs:
+            spot_files = [os.path.join(cohort_dir, f) for f in os.listdir(cohort_dir) if f.endswith('.pkl')]
+            random.shuffle(spot_files)
+            self.cohort_files.extend(spot_files)
 
 class SpotDataset(Dataset):
     """
@@ -27,8 +44,13 @@ class SpotDataset(Dataset):
             transform (callable, optional): Optional transform to be applied on a sample.
         """
         self.root_dir = root_dir
-        self.spot_files = [os.path.join(dp, f) for dp, dn, filenames in os.walk(root_dir) for f in filenames if f.endswith('.pkl')]
+        self.cohort_shuffler = CohortShuffler(root_dir)
+        self.spot_files = self.cohort_shuffler.cohort_files
         self.transform = transform
+        
+    def reset_shuffling(self):
+        self.cohort_shuffler.reset()
+        self.spot_files = self.cohort_shuffler.cohort_files
 
     def __len__(self):
         return len(self.spot_files)
