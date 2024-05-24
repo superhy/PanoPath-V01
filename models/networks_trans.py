@@ -116,7 +116,7 @@ class BlockGeneTransformer(nn.Module):
             block_output = self.transformer_block.encoder(x_block, src_key_padding_mask=mask_block)
             
             # Replace NaNs with zeros
-            block_output = torch.nan_to_num(block_output, nan=1e-8)
+            block_output = torch.nan_to_num(block_output, nan=1e-5)
             block_outputs.append(block_output)
             
             # Update valid lengths

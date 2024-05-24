@@ -21,7 +21,7 @@ ENV_ST_HE_PRE = parames.parame_st_task(project_name=ENV.PROJECT_NAME,
                                        img_n_heads=4,
                                        img_n_layers=3,
                                        img_hidden_dim=128,
-                                       clip_lr=1e-3,
+                                       clip_lr=1e-5,
                                        clip_batch_size=32, # have to be on multi-GPUs, otherwise <= 8
                                        clip_n_workers=8,
                                        clip_n_epochs=1000,
