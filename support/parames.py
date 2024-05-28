@@ -73,7 +73,7 @@ class parame_st_task(parames_basic):
                  gene_n_layers=3,
                  gene_dropout=0.2,
                  gene_hidden_dim=128,
-                 block_gene_size=512,
+                 block_gene_size=500,
                  img_vit_patch_size=16,
                  img_n_heads=4,
                  img_n_layers=3,
@@ -82,6 +82,7 @@ class parame_st_task(parames_basic):
                  clip_batch_size=4,
                  clip_n_workers=8,
                  clip_n_epochs=1000,
+                 grad_clip=False,
                  clip_milestore=[0.2, 0.4, 0.6, 0.8, 1.0]
                  ):
         
@@ -124,6 +125,7 @@ class parame_st_task(parames_basic):
         self.CLIP_BACTH_SIZE = clip_batch_size 
         self.CLIP_N_WORKERS = clip_n_workers
         self.CLIP_N_EPOCHS = clip_n_epochs
+        self.GRAD_CLIP = grad_clip
         self.CLIP_MILESTORE = clip_milestore
         
 

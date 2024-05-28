@@ -51,10 +51,12 @@ def clip_training_spot(ENV_task, img_encoder, gene_encoder,
         #                                milestons=milestons)
         functions.train_clip_multi_gpu_torch(clip_model, dataloader, nb_epochs, optimizer, 
                                              store_path=store_path,
+                                             grad_clip=ENV_task.GRAD_CLIP,
                                              milestons=milestons)
     else:
         functions.train_clip(clip_model, dataloader, nb_epochs, optimizer, 
                              store_path=store_path,
+                             grad_clip=ENV_task.GRAD_CLIP,
                              milestons=milestons)
 
 

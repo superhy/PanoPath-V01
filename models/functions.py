@@ -138,7 +138,7 @@ def get_data_arg_redu_size_transform():
 ''' ------------- training function for CLIP ------------ '''
 
 def train_clip(model, dataloader, epochs, optimizer, store_path,
-               milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
+               grad_clip=False, milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
     '''
     '''
     
@@ -148,6 +148,7 @@ def train_clip(model, dataloader, epochs, optimizer, store_path,
     for epoch in range(epochs):
         total_loss = 0.0
         dataloader.dataset.reset_shuffling()
+        model_path = store_path
         
         run_time = Time()
         for batch in dataloader:
@@ -163,7 +164,8 @@ def train_clip(model, dataloader, epochs, optimizer, store_path,
             image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
             loss = clip_loss(image_features, gene_features, model.temperature)
             loss.backward()
-            # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
+            if grad_clip:
+                nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
             optimizer.step()
             
             total_loss += loss.item()
@@ -174,11 +176,12 @@ def train_clip(model, dataloader, epochs, optimizer, store_path,
         
         check_points = [int(epochs * ms) for ms in milestons]
         if epoch + 1 in check_points or epoch + 1 >= epochs:
-            store_path = networks.store_net(model, store_path, optimizer)
-            print(f'record checkpoint at: {store_path}')
+            model_path = model_path.replace('.pth', f'[{epoch + 1}].pth')
+            _ = networks.store_net(model, model_path, optimizer)
+            print(f'record checkpoint at: {model_path}')
             
 def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
-                               milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
+                               grad_clip=False, milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
     # Move model to the available GPU(s)
     model = nn.DataParallel(model)  # Use DataParallel to utilize multiple GPUs
     model = env._todevice(model)
@@ -187,6 +190,7 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
     for epoch in range(epochs):
         total_loss = 0.0
         dataloader.dataset.reset_shuffling()
+        model_path = store_path
         
         run_time = Time()
         for batch in dataloader:
@@ -201,7 +205,8 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
             image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
             loss = clip_loss(image_features, gene_features, model.module.temperature)
             loss.backward()
-            # nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
+            if grad_clip:
+                nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
             optimizer.step()
             total_loss += loss.item()
         
@@ -211,9 +216,9 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
         
         check_points = [int(epochs * ms) for ms in milestons]
         if epoch + 1 in check_points or epoch + 1 >= epochs:
-            store_path = store_path.replace('.pth', f'[{epoch + 1}].pth')
-            store_path = networks.store_net(model, store_path, optimizer)
-            print(f'record checkpoint at: {store_path}')
+            model_path = model_path.replace('.pth', f'[{epoch + 1}].pth')
+            _ = networks.store_net(model, model_path, optimizer)
+            print(f'record checkpoint at: {model_path}')
             
         
 def train_clip_multi_gpu(model, dataloader, epochs, optimizer, store_path,
@@ -229,6 +234,7 @@ def train_clip_multi_gpu(model, dataloader, epochs, optimizer, store_path,
     for epoch in range(epochs):
         total_loss = 0.0
         dataloader.dataset.reset_shuffling()
+        model_path = store_path
         
         run_time = Time()
         for batch in dataloader:
@@ -252,8 +258,9 @@ def train_clip_multi_gpu(model, dataloader, epochs, optimizer, store_path,
         
         check_points = [int(epochs * ms) for ms in milestons]
         if epoch + 1 in check_points or epoch + 1 >= epochs:
-            store_path = networks.store_net(model, store_path, optimizer)
-            print(f'record checkpoint at: {store_path}')
+            model_path = model_path.replace('.pth', f'[{epoch + 1}].pth')
+            _ = networks.store_net(model, model_path, optimizer)
+            print(f'record checkpoint at: {model_path}')
 
 
 
