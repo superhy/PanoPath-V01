@@ -42,7 +42,7 @@ def clip_training_spot(ENV_task, img_encoder, gene_encoder,
     optimizer = functions.optimizer_adam_basic(clip_model, lr=ENV_task.CLIP_LR)
     
     store_path = os.path.join(model_dir, 
-                              f'CLIP_{img_encoder.network_name}_{img_encoder.network_name}.pth')
+                              f'CLIP_{img_encoder.network_name}_{gene_encoder.network_name}.pth')
     
     print('>>> start to training')
     if multi_gpu == True:
