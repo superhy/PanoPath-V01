@@ -21,16 +21,14 @@ ENV_ST_HE_PRE = parames.parame_st_task(project_name=ENV.PROJECT_NAME,
                                        img_n_heads=4,
                                        img_n_layers=3,
                                        img_hidden_dim=128,
-                                       clip_lr=1e-5,
-                                       clip_batch_size=128, # have to be on multi-GPUs, otherwise <= 8
+                                       clip_lr=2e-5,
+                                       clip_batch_size=256, # have to be on multi-GPUs, otherwise <= 8
                                        clip_n_workers=12,
-                                       clip_n_epochs=4000,
+                                       clip_n_epochs=200,
                                        grad_clip=False,
-                                       clip_milestore=[0.01, 
-                                                       0.05, 0.1, 0.15, 0.2, 0.25,
-                                                       0.3, 0.35, 0.4, 0.45, 0.5, 
-                                                       0.55, 0.6, 0.65, 0.7, 0.75,
-                                                       0.8, 0.85, 0.9, 0.95, 1.0])
+                                       warmup_steps=200,
+                                       clip_milestore=[0.05, 
+                                                       0.25, 0.5, 0.75, 1.0])
 
 if __name__ == '__main__':
     pass

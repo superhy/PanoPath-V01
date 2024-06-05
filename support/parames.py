@@ -83,6 +83,7 @@ class parame_st_task(parames_basic):
                  clip_n_workers=8,
                  clip_n_epochs=1000,
                  grad_clip=False,
+                 warmup_steps=200,
                  clip_milestore=[0.2, 0.4, 0.6, 0.8, 1.0]
                  ):
         
@@ -126,6 +127,7 @@ class parame_st_task(parames_basic):
         self.CLIP_N_WORKERS = clip_n_workers
         self.CLIP_N_EPOCHS = clip_n_epochs
         self.GRAD_CLIP = grad_clip
+        self.WARMUP_STEPS = warmup_steps
         self.CLIP_MILESTORE = clip_milestore
         
 

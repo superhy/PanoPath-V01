@@ -13,6 +13,7 @@ from torch.optim import lr_scheduler
 from torch.utils.data.dataloader import DataLoader
 from torchvision import transforms
 from tqdm import tqdm
+from transformers.optimization import get_linear_schedule_with_warmup
 
 from models import networks
 from models.networks import clip_loss
@@ -138,12 +139,15 @@ def get_data_arg_redu_size_transform():
 ''' ------------- training function for CLIP ------------ '''
 
 def train_clip(model, dataloader, epochs, optimizer, store_path,
-               grad_clip=False, milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
+               grad_clip=False, warmup_steps=500, milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
     '''
     '''
     
     model = env._todevice(model)
     model.train()
+    
+    total_steps = len(dataloader) * epochs
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
     
     for epoch in range(epochs):
         total_loss = 0.0
@@ -167,6 +171,7 @@ def train_clip(model, dataloader, epochs, optimizer, store_path,
             if grad_clip:
                 nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
             optimizer.step()
+            scheduler.step()  # Update learning rate
             
             total_loss += loss.item()
         
@@ -181,11 +186,14 @@ def train_clip(model, dataloader, epochs, optimizer, store_path,
             print(f'record checkpoint at: {model_path}')
             
 def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
-                               grad_clip=False, milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
+                               grad_clip=False, warmup_steps=200, milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
     # Move model to the available GPU(s)
     model = nn.DataParallel(model)  # Use DataParallel to utilize multiple GPUs
     model = env._todevice(model)
     model.train()
+    
+    total_steps = len(dataloader) * epochs
+    scheduler = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=total_steps)
 
     for epoch in range(epochs):
         total_loss = 0.0
@@ -208,6 +216,8 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
             if grad_clip:
                 nn.utils.clip_grad_norm_(model.parameters(), max_norm=1.0) # grad cut
             optimizer.step()
+            scheduler.step()  # Update learning rate
+            
             total_loss += loss.item()
         
         avg_loss = total_loss / len(dataloader)
@@ -220,49 +230,9 @@ def train_clip_multi_gpu_torch(model, dataloader, epochs, optimizer, store_path,
             _ = networks.store_net(model, model_path, optimizer)
             print(f'record checkpoint at: {model_path}')
             
-        
-def train_clip_multi_gpu(model, dataloader, epochs, optimizer, store_path,
-                         milestons=[0.2, 0.4, 0.6, 0.8, 1.0]):
-    '''
-    TODO: not work on multi-GPU, need to check
-    '''
-    
-    accelerator = Accelerator()
-    model.train()
-    model, optimizer, dataloader = accelerator.prepare(model, optimizer, dataloader)
-    
-    for epoch in range(epochs):
-        total_loss = 0.0
-        dataloader.dataset.reset_shuffling()
-        model_path = store_path
-        
-        run_time = Time()
-        for batch in dataloader:
-        # for batch in tqdm(dataloader, desc=f"MP Epoch {epoch+1}/{epochs}"):
-            img_small = batch['img_small']
-            img_large = batch['img_large']
-            gene_ids = batch['gene_ids']
-            gene_exp = batch['gene_exp']
-            mask = batch['mask']
-            
-            optimizer.zero_grad()
-            image_features, gene_features = model(img_small, img_large, gene_ids, gene_exp, mask)
-            loss = clip_loss(image_features, gene_features, model.temperature)
-            accelerator.backward(loss)
-            optimizer.step()
-            total_loss += loss.item()
-        
-        avg_loss = total_loss / len(dataloader)
-        print(f"MP-T Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}, running time: {str(run_time.elapsed())[:-5]}")
-        # print(f"Epoch [{epoch+1}/{epochs}], Loss: {avg_loss:.4f}")
-        
-        check_points = [int(epochs * ms) for ms in milestons]
-        if epoch + 1 in check_points or epoch + 1 >= epochs:
-            model_path = model_path.replace('.pth', f'[{epoch + 1}].pth')
-            _ = networks.store_net(model, model_path, optimizer)
-            print(f'record checkpoint at: {model_path}')
-
 
 
 if __name__ == '__main__':
     pass
+
+
