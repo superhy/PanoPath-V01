@@ -176,9 +176,22 @@ def test_spot_dataloader():
         
         current_batch += 1
             
+def _check_network_structure():
+    ENV_task = env_st_pre.ENV_ST_HE_PRE
+    gene_vocab_name = 'gene_tokenizer.pkl'
+    tokenizer = load_pyobject_from_pkl(ENV_task.ST_HE_CACHE_DIR, gene_vocab_name)
+    vocab_size = len(tokenizer.vocab)
+    gene_encoder = BlockGeneTransformer(vocab_size, 
+                                        n_heads=ENV_task.GENE_N_HEADS, 
+                                        n_layers=ENV_task.GENE_N_LAYERS, 
+                                        dropout=ENV_task.GENE_DROPOUT,
+                                        block_size=ENV_task.BLOCK_GENE_SIZE,
+                                        hidden_dim=ENV_task.GENE_HIDDEN_DIM)
+    print(gene_encoder)
+
 if __name__ == '__main__':
     
-    test_spot_tools_1()
+    # test_spot_tools_1()
     # test_spot_process_1()
     # test_spot_process_2()
     # test_spot_process_3()
@@ -188,6 +201,8 @@ if __name__ == '__main__':
     # test_embedding_gene_exp()
     
     # test_spot_dataloader()
+    
+    _check_network_structure()
     
     
     

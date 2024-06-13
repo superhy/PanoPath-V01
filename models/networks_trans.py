@@ -74,10 +74,10 @@ class BlockGeneTransformer(nn.Module):
             dropout=dropout, batch_first=True
         )
         
-        self.norm = nn.Sequential(
-            nn.LayerNorm(hidden_dim),
-            nn.ReLU()
-        )
+        # self.norm = nn.Sequential(
+        #     nn.LayerNorm(hidden_dim),
+        #     nn.ReLU()
+        # )
         
     def check_tensor(self, tensor, name):
         if torch.isnan(tensor).any():
@@ -128,7 +128,7 @@ class BlockGeneTransformer(nn.Module):
         # print(valid_lengths)
         # Concatenate the block outputs
         x = torch.cat(block_outputs, dim=1)
-        x = self.norm(x)
+        # x = self.norm(x)
         
         # Compute the mean, taking into account the valid lengths
         # print(valid_lengths)
